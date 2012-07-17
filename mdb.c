@@ -173,7 +173,7 @@ void mdb_setup(void) {
 		case 0:
             
             #if DEBUG == 1
-            send_str(0, "SETUP STAGE 1\r\n"));
+            send_str_p(0, PSTR("SETUP STAGE 1\r\n"));
             #endif
             
 			// store VMC configuration data
@@ -215,7 +215,7 @@ void mdb_setup(void) {
 		case 1:
         
             #if DEBUG == 1
-            send_str(0, "SETUP STAGE 2\r\n"));
+            send_str_p(0, PSTR("SETUP STAGE 2\r\n"));
             #endif
             
             // store VMC price data
@@ -242,7 +242,7 @@ void mdb_setup(void) {
             if(buffer_level(1,RX) < 2) return; 
             
             #if DEBUG == 1
-            send_str(0, "SETUP WAIT FOR ACK\r\n"));
+            send_str_p(0, PSTR("SETUP WAIT FOR ACK\r\n"));
             #endif
             
 			// Check if VMC sent ACK
@@ -289,7 +289,7 @@ void mdb_poll(void) {
         if(buffer_level(1,RX) < 2) return; 
         
         #if DEBUG == 1
-        send_str(0, "POLL\r\n"));
+        send_str_p(0, PSTR("POLL\r\n"));
         #endif
         
         // validate checksum
@@ -304,6 +304,7 @@ void mdb_poll(void) {
     } 
 
     switch(mdb_poll_reply) {
+        
         case MDB_REPLY_ACK:
             // send ACK
             send_mdb(1, 0x100);
@@ -348,65 +349,166 @@ void mdb_poll(void) {
         break;
 
         case MDB_REPLY_BEGIN_SESSION:
-            if(session.start.flag) {
+            if(session.start.flag && state == 1) {
                 send_mdb(1, 0x003);
                 send_mdb(1, (session.start.funds >> 8));
                 send_mdb(1, (session.start.funds & 0xFF));
                 checksum = 0x003 + (session.start.funds >> 8) + (session.start.funds & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
                 send_mdb(1, checksum);
+                state = 2;
+            }
+            
+            else if(session.start.flag && state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    session.start.flag = 0;
+                    session.start.funds = 0;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [START SESSION]\r\n"));
+                    return;    
+                }
+                session.start.flag = 0;
+                session.start.funds = 0;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 state = 0;
+                return;
             }
         break;
 
         case MDB_REPLY_SESSION_CANCEL_REQ:
-            send_mdb(1, 0x004);
-            send_mdb(1, 0x104);
-            mdb_active_cmd = MDB_IDLE;
-            mdb_poll_reply = MDB_REPLY_ACK;
-            state = 0;
+            if(state == 1) {
+                send_mdb(1, 0x004);
+                send_mdb(1, 0x104);
+                state = 2;
+            }
+            else if(state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [SESSION CANCEL REQ]\r\n"));
+                    return;    
+                }
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                state = 0;
+                return;    
+            }
         break;
         
         case MDB_REPLY_VEND_APPROVED:
-            if(session.result.vend_approved) {
+            if(session.result.vend_approved && state == 1) {
                 send_mdb(1, 0x005);
                 send_mdb(1, (session.result.vend_amount >> 8));
                 send_mdb(1, (session.result.vend_amount & 0xFF));
                 checksum = 0x005 + (session.result.vend_amount >> 8) + (session.result.vend_amount & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
                 send_mdb(1, checksum);
+                state = 2;
+            }
+            else if(session.result.vend_approved && state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    session.result.vend_approved = 0;
+                    session.result.vend_amount = 0;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [VEND APPROVE]\r\n"));
+                    return;    
+                }
+                session.result.vend_approved = 0;
+                session.result.vend_amount = 0;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 state = 0;
+                return;    
             }
         break;
         
         case MDB_REPLY_VEND_DENIED:
-            if(session.result.vend_denied) {
+            if(session.result.vend_denied && state == 1) {
                 send_mdb(1, 0x006);
                 send_mdb(1, 0x106);
+                state = 2;
+            }
+            else if(session.result.vend_denied && state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    session.result.vend_denied = 0;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [VEND DENY]\r\n"));
+                    return;    
+                }
+                session.result.vend_denied = 0;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 state = 0;
+                return;    
             }
         break;
         
         case MDB_REPLY_END_SESSION:
-            send_mdb(1, 0x007);
-            send_mdb(1, 0x107);
-            mdb_active_cmd = MDB_IDLE;
-            mdb_poll_reply = MDB_REPLY_ACK;
-            state = 0;
+            if(state == 1) {
+                send_mdb(1, 0x007);
+                send_mdb(1, 0x107);
+                state = 2;
+            }
+            else if(state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [END SESSION]\r\n"));
+                    return;    
+                }
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                state = 0;
+                return;    
+            }
         break;
         
         case MDB_REPLY_CANCELED:
-            send_mdb(1, 0x008);
-            send_mdb(1, 0x108);
-            mdb_active_cmd = MDB_IDLE;
-            mdb_poll_reply = MDB_REPLY_ACK;
-            state = 0;
+            if(state == 1) {
+                send_mdb(1, 0x008);
+                send_mdb(1, 0x108);
+                state = 2;
+            }
+            else if(state == 2) {
+                // wait for enough data in Buffer
+                if(buffer_level(1,RX) < 2) return; 
+                // check if VMC sent ACK
+                if(recv_mdb(1) != 0x000) {
+                    mdb_active_cmd = MDB_IDLE;
+                    mdb_poll_reply = MDB_REPLY_ACK;
+                    state = 0;
+                    send_str_p(0,PSTR("Error: no ACK received on [REPLY CANCELED]\r\n"));
+                    return;    
+                }
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                state = 0;
+                return;    
+            }
         break;
         
         case MDB_REPLY_PERIPHERIAL_ID:
@@ -449,7 +551,7 @@ void mdb_vend(void) {
             if(buffer_level(1,RX) < 10) return;     
 
             #if DEBUG == 1
-            send_str(0, "VEND REQUEST\r\n"));
+            send_str_p(0, PSTR("VEND REQUEST\r\n"));
             #endif
             
             // fetch the data from buffer
@@ -489,7 +591,7 @@ void mdb_vend(void) {
             if(buffer_level(1,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str(0, "VEND Cancel\r\n"));
+            send_str_p(0, PSTR("VEND Cancel\r\n"));
             #endif
             
             // fetch the data from buffer
@@ -526,7 +628,7 @@ void mdb_vend(void) {
             if(buffer_level(1,RX) < 6) return;     
 
             #if DEBUG == 1
-            send_str(0, "VEND SUCCESS\r\n"));
+            send_str_p(0, PSTR("VEND SUCCESS\r\n"));
             #endif
             
             // fetch the data from buffer
@@ -566,7 +668,7 @@ void mdb_vend(void) {
             if(buffer_level(1,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str(0, "VEND FAILURE\r\n"));
+            send_str_p(0, PSTR("VEND FAILURE\r\n"));
             #endif
             
             // fetch the data from buffer
@@ -603,7 +705,7 @@ void mdb_vend(void) {
             if(buffer_level(1,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str(0, "VEND SESSION COMPLETE\r\n"));
+            send_str_p(0, PSTR("VEND SESSION COMPLETE\r\n"));
             #endif
             
             // fetch the data from buffer
@@ -661,7 +763,7 @@ void mdb_reader(void) {
             }
             
             #if DEBUG == 1
-            send_str(0, "READER DISABLE\r\n"));
+            send_str_p(0, PSTR("READER DISABLE\r\n"));
             #endif
             
             // send ACK
@@ -681,7 +783,7 @@ void mdb_reader(void) {
             }
             
             #if DEBUG == 1
-            send_str(0, "READER ENABLE\r\n"));
+            send_str_p(0, PSTR("READER ENABLE\r\n"));
             #endif
             
             // send ACK
@@ -701,7 +803,7 @@ void mdb_reader(void) {
             }
             
             #if DEBUG == 1
-            send_str(0, "READER CANCEL\r\n"));
+            send_str_p(0, PSTR("READER CANCEL\r\n"));
             #endif
             
             // send ACK
