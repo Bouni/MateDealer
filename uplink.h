@@ -35,6 +35,8 @@
 #define MAX_CMD_LENGTH      20
 #define MAX_VAR             10
 
+#define RESET() {asm("ldi r30,0"); asm("ldi r31,0"); asm("ijmp");}
+
 typedef struct {
     char* cmd;
     void(*funcptr)(char *arg);
@@ -43,6 +45,7 @@ typedef struct {
 void uplink_cmd_handler(void);
 void parse_cmd(char *cmd);
 
+void cmd_reset(char *arg);
 void cmd_help(char *arg);
 void cmd_info(char *arg);
 void cmd_get_mdb_state(char *arg);
@@ -50,8 +53,5 @@ void cmd_start_session(char *arg);
 void cmd_approve_vend(char *arg);
 void cmd_deny_vend(char *arg);
 void cmd_cancel_session(char *arg);
-/*
-void cmd_read(void);
-void cmd_write(void);
-*/
+
 #endif // UPLINK_H

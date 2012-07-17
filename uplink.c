@@ -41,6 +41,7 @@
 #include "uplink.h"
 
 cmdStruct_t CMD_LIST[] = {
+    {"reset",cmd_reset},
     {"help",cmd_help},
 	{"info",cmd_info},
     {"get-mdb-state",cmd_get_mdb_state},
@@ -136,8 +137,13 @@ void parse_cmd(char *cmd) {
   
 }
 
+void cmd_reset(char *arg) {
+    RESET();
+}
+
 void cmd_help(char *arg) {
     send_str_p(0, PSTR("-----------------------------------------------\r\n"));
+    send_str_p(0, PSTR("reset:\r\n   reset the Arduino\r\n"));
     send_str_p(0, PSTR("info:\r\n   shows the VMC infos transfered during the setup process\r\n"));
     send_str_p(0, PSTR("get-mdb-state:\r\n   displays the current MDB state.\r\n"));
     send_str_p(0, PSTR("start-session <funds>:\r\n   starts a session with <funds> Euro Cents.\r\n"));
