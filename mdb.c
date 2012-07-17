@@ -374,6 +374,7 @@ void mdb_poll(void) {
                 }
                 session.start.flag = 0;
                 session.start.funds = 0;
+                mdb_state = MDB_SESSION_IDLE;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 state = 0;
@@ -394,10 +395,14 @@ void mdb_poll(void) {
                 if(recv_mdb(1) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
+                    session.start.flag = 0;
+                    session.start.funds = 0;
                     state = 0;
                     send_str_p(0,PSTR("Error: no ACK received on [SESSION CANCEL REQ]\r\n"));
                     return;    
                 }
+                session.start.flag = 0;
+                session.start.funds = 0;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 state = 0;
@@ -450,11 +455,15 @@ void mdb_poll(void) {
                 if(recv_mdb(1) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
+                    session.start.flag = 0;
+                    session.start.funds = 0;
                     session.result.vend_denied = 0;
                     state = 0;
                     send_str_p(0,PSTR("Error: no ACK received on [VEND DENY]\r\n"));
                     return;    
                 }
+                session.start.flag = 0;
+                session.start.funds = 0;
                 session.result.vend_denied = 0;
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;

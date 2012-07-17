@@ -206,9 +206,13 @@ void cmd_get_mdb_state(char *arg) {
 
 void cmd_start_session(char *arg) {
     if(mdb_state == MDB_ENABLED) {
-        session.start.flag = 1;
-        session.start.funds = atoi(arg);
-        mdb_poll_reply = MDB_REPLY_BEGIN_SESSION;
+        if(session.start.flag == 0) {
+            session.start.flag = 1;
+            session.start.funds = atoi(arg);
+            mdb_poll_reply = MDB_REPLY_BEGIN_SESSION;
+        } else {
+            send_str_p(0,PSTR("Error: Session is already running\r\n"));  
+        }
     } else {
         send_str_p(0,PSTR("Error: MateDealer not ready for a session\r\n"));  
     }
@@ -226,6 +230,7 @@ void cmd_approve_vend(char *arg) {
 
 void cmd_deny_vend(char *arg) {
     if(mdb_state == MDB_VENDING) {
+        session.result.vend_denied = 1;
         mdb_poll_reply = MDB_REPLY_VEND_DENIED;
     } else {
         send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to deny a vend\r\n"));  
