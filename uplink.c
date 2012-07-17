@@ -1,0 +1,247 @@
+/* * 
+ * This program is free software; you can redistribute it and/or modify 
+ * it under the terms of the GNU General Public License as published by 
+ * the Free Software Foundation; either version 2 of the License, or 
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful, but 
+ * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+ * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License 
+ * for more details.
+ * 
+ * You should have received a copy of the GNU General Public License along 
+ * with this program; if not, write to the Free Software Foundation, Inc., 
+ * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
+/**
+ * Project: MateDealer
+ * File name: uplink.c
+ * Description:  Communication methods for interacting with the PC. 
+ *   
+ * @author bouni
+ * @email bouni@owee.de  
+ *   
+ * @see The GNU Public License (GPL)
+ */
+
+#ifndef F_CPU
+#define F_CPU       16000000UL
+#endif
+
+#include <avr/io.h>
+#include <inttypes.h>
+#include <avr/eeprom.h>
+#include <avr/pgmspace.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "usart.h"
+#include "mdb.h"
+#include "uplink.h"
+
+cmdStruct_t CMD_LIST[] = {
+    {"help",cmd_help},
+	{"info",cmd_info},
+    {"get-mdb-state",cmd_get_mdb_state},
+    {"start-session",cmd_start_session},
+    {"approve-vend",cmd_approve_vend},
+    {"deny-vend",cmd_deny_vend},
+    {"cancel-session",cmd_cancel_session},
+    /*
+    {"read",cmd_read},
+    {"write",cmd_write},*/
+	{NULL,NULL} 
+};
+
+extern uint8_t mdb_state;
+extern uint8_t mdb_poll_reply;
+extern vmcCfg_t vmc;
+extern vmcPrice_t price;
+extern mdbSession_t session;
+
+char buff[20];
+
+//uint8_t eeByte EEMEM;
+
+void uplink_cmd_handler(void) {
+    
+    static char cmd[20];
+    static uint8_t index = 0;
+    
+    // No data received, return
+    if(buffer_level(0,RX) < 1) return;
+    
+    // flush cmd buffer if cmd is out of a valid length
+    if(index == MAX_CMD_LENGTH) {
+        index = 0;
+    }
+
+    // append char to cmd
+    recv_char(0, &cmd[index]);
+    
+    switch(cmd[index]) {
+        case '\r':
+            // carriage return received, replace with stringtermination and parse
+            send_str(0, "\r\n");
+            cmd[index] = '\0';
+            parse_cmd(cmd);
+            index = 0;
+        break;
+        case '\n':
+            // do nothing, but avoid index from incrementing
+        break;
+        case '\b':
+            // backspace, remove last received char
+            index--;
+            send_char(0, '\b');
+        break;
+            // char is part of an ESC sequence
+        case 0x1B:
+        case 0x5B:
+            index++;
+        break;
+            // each other if the last two char was not part of an ESC sequence
+        default:
+            if(cmd[index - 1] == 0x5B && cmd[index - 2] == 0x1B) {
+                    index = index - 2;
+            } else {
+                send_char(0, cmd[index]);
+                index++;
+            }
+    }
+  
+}
+
+void parse_cmd(char *cmd) {
+    
+	char *tmp;
+	uint8_t index = 0;
+     
+    // seperate command from arguments
+    tmp = strsep(&cmd," "); 
+    
+    // search in command list for the command
+	while(strcasecmp(CMD_LIST[index].cmd,tmp)) {
+        if(CMD_LIST[index + 1].cmd == NULL) {
+            send_str_p(0,PSTR("Error: Unknown command\r\n"));    
+            return;
+        }
+        index++;
+    }
+
+    // run the command
+    CMD_LIST[index].funcptr(cmd);
+	return;
+  
+}
+
+void cmd_help(char *arg) {
+    send_str_p(0, PSTR("-----------------------------------------------\r\n"));
+    send_str_p(0, PSTR("info:\r\n   shows the VMC infos transfered during the setup process\r\n"));
+    send_str_p(0, PSTR("get-mdb-state:\r\n   displays the current MDB state.\r\n"));
+    send_str_p(0, PSTR("start-session <funds>:\r\n   starts a session with <funds> Euro Cents.\r\n"));
+    send_str_p(0, PSTR("approve-vend <vend-amount>:\r\n   approves a vend request with <vend-amount> Euro Cents.\r\n"));
+    send_str_p(0, PSTR("deny-vend:\r\n   denies a vend request.\r\n"));
+    send_str_p(0, PSTR("-----------------------------------------------\r\n"));
+}
+
+void cmd_info(char *arg) {
+    if(mdb_state >= MDB_ENABLED) {
+        char buffer[40];
+        send_str_p(0, PSTR("-----------------------------------------------\r\n"));
+        send_str_p(0,PSTR("## VMC configuration data ##\r\n")); 
+        sprintf(buffer,"VMC feature level:       %d\r\n", vmc.feature_level);
+        send_str(0,buffer);  
+        sprintf(buffer,"VMC display columns:     %d\r\n", vmc.dispaly_cols);
+        send_str(0,buffer);  
+        sprintf(buffer,"VMC display rows:        %d\r\n", vmc.dispaly_rows);
+        send_str(0,buffer);  
+        sprintf(buffer,"VMC display info:        %d\r\n", vmc.dispaly_info);
+        send_str(0,buffer);  
+        send_str_p(0,PSTR("##    VMC price range     ##\r\n")); 
+        sprintf(buffer,"Maximum price:           %d\r\n", price.max);
+        send_str(0,buffer);  
+        sprintf(buffer,"Minimum price:           %d\r\n", price.min);
+        send_str(0,buffer);
+        send_str_p(0,PSTR("-----------------------------------------------\r\n"));  
+    } else {
+        send_str_p(0,PSTR("Error: Setup not yet completed!\r\n"));  
+    }
+}
+
+void cmd_get_mdb_state(char *arg) {
+    
+    switch(mdb_state) {
+        case MDB_INACTIVE:
+            send_str_p(0,PSTR("INACTIVE\r\n"));  
+        break;
+        case MDB_DISABLED:
+            send_str_p(0,PSTR("DISABLED\r\n"));  
+        break;
+        case MDB_ENABLED:
+            send_str_p(0,PSTR("ENABLED\r\n"));  
+        break;
+        case MDB_SESSION_IDLE:
+            send_str_p(0,PSTR("SESSION IDLE\r\n"));  
+        break;
+        case MDB_VENDING:
+            send_str_p(0,PSTR("VEND\r\n"));  
+        break;
+        case MDB_REVALUE:
+            send_str_p(0,PSTR("REVALUE\r\n"));  
+        break;
+        case MDB_NEGATIVE_VEND:
+            send_str_p(0,PSTR("NEGATIVE VEND\r\n"));  
+        break;
+    }
+    
+}
+
+void cmd_start_session(char *arg) {
+    if(mdb_state == MDB_ENABLED) {
+        session.start.flag = 1;
+        session.start.funds = atoi(arg);
+        mdb_poll_reply = MDB_REPLY_BEGIN_SESSION;
+    } else {
+        send_str_p(0,PSTR("Error: MateDealer not ready for a session\r\n"));  
+    }
+}
+
+void cmd_approve_vend(char *arg) {
+    if(mdb_state == MDB_VENDING) {
+        session.result.vend_approved = 1;
+        session.result.vend_amount = atoi(arg);
+        mdb_poll_reply = MDB_REPLY_VEND_APPROVED;
+    } else {
+        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to approve a vend\r\n"));  
+    }
+}
+
+void cmd_deny_vend(char *arg) {
+    if(mdb_state == MDB_VENDING) {
+        mdb_poll_reply = MDB_REPLY_VEND_DENIED;
+    } else {
+        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to deny a vend\r\n"));  
+    }
+}
+
+void cmd_cancel_session(char *arg) {
+    if(mdb_state == MDB_SESSION_IDLE) {
+        mdb_poll_reply = MDB_REPLY_SESSION_CANCEL_REQ;
+    } else {
+        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to cancel a session\r\n"));  
+    }
+}
+/*
+void cmd_read(void) {
+    uint8_t tmp = 0;
+    tmp = eeprom_read_byte(&eeByte);
+    itoa(tmp, buff, 10);
+    send_str(0,buff);
+}
+
+void cmd_write(void) {
+    eeprom_write_byte(&eeByte, cmd_var[0]); // schreiben
+}
+*/
