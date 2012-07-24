@@ -32,6 +32,8 @@
 #define F_CPU       16000000UL
 #endif // F_CPU
 
+#define UPLINK_USART        0
+
 #define MAX_CMD_LENGTH      20
 #define MAX_VAR             10
 

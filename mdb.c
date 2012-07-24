@@ -69,9 +69,9 @@ void mdb_cmd_handler(void) {
     
         case MDB_IDLE:
             // Wait for enough data in buffer
-            if(buffer_level(1,RX) < 2) return; 
+            if(buffer_level(MDB_USART,RX) < 2) return; 
             // read data from buffer
-            uint16_t data = recv_mdb(1);
+            uint16_t data = recv_mdb(MDB_USART);
             // if modebit is set and command is in command range for cashless device
             if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_READER) {
                 //Set command as active command
@@ -104,17 +104,17 @@ void mdb_cmd_handler(void) {
 void mdb_reset(void) {
     
     // Wait for enough data in buffer to proceed reset
-	if(buffer_level(1,RX) < 2) return; 
+	if(buffer_level(MDB_USART,RX) < 2) return; 
 
     #if DEBUG == 1
-    send_str_p(0, PSTR("RESET\r\n"));
+    send_str_p(UPLINK_USART, PSTR("RESET\r\n"));
     #endif
     
     // validate checksum
-	if(recv_mdb(1) != MDB_RESET) {
+	if(recv_mdb(MDB_USART) != MDB_RESET) {
 		mdb_active_cmd = MDB_IDLE;
 		mdb_poll_reply = MDB_REPLY_ACK;
-        send_str_p(0,PSTR("Error: invalid checksum for [RESET]\r\n"));
+        send_str_p(UPLINK_USART,PSTR("Error: invalid checksum for [RESET]\r\n"));
 		return;
 	}
 
@@ -127,7 +127,7 @@ void mdb_reset(void) {
 	price.min = 0;
 
     // Send ACK
-    send_mdb(1, 0x100);
+    send_mdb(MDB_USART, 0x100);
  
     mdb_state = MDB_INACTIVE;
     mdb_active_cmd = MDB_IDLE;
@@ -143,11 +143,11 @@ void mdb_setup(void) {
     
     if(state < 2) {
     	// Wait for enough data in buffer
-		if(buffer_level(1,RX) < 12) return; 
+		if(buffer_level(MDB_USART,RX) < 12) return; 
 		
         // fetch the data from buffer
 		for(index = 0; index < 6; index++) {
-            data[index] = (uint8_t) recv_mdb(1);
+            data[index] = (uint8_t) recv_mdb(MDB_USART);
         }
 		
 		// calculate checksum
@@ -160,7 +160,7 @@ void mdb_setup(void) {
 			mdb_active_cmd = MDB_IDLE;
 			mdb_poll_reply = MDB_REPLY_ACK;
 			checksum = MDB_SETUP;
-            send_str_p(0,PSTR("Error: invalid checksum [SETUP]\r\n"));
+            send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [SETUP]\r\n"));
 			return;  
 		}
 		state = data[0];
@@ -173,7 +173,7 @@ void mdb_setup(void) {
 		case 0:
             
             #if DEBUG == 1
-            send_str_p(0, PSTR("SETUP STAGE 1\r\n"));
+            send_str_p(UPLINK_USART, PSTR("SETUP STAGE 1\r\n"));
             #endif
             
 			// store VMC configuration data
@@ -193,15 +193,15 @@ void mdb_setup(void) {
                          cd.misc_options) & 0xFF) | 0x100;
 
             // Send own config data
-            send_mdb(1, cd.reader_cfg);
-            send_mdb(1, cd.feature_level);
-            send_mdb(1, (cd.country_code >> 8));
-            send_mdb(1, (cd.country_code & 0xFF));
-            send_mdb(1, cd.scale_factor);
-            send_mdb(1, cd.decimal_places);
-            send_mdb(1, cd.max_resp_time);
-            send_mdb(1, cd.misc_options);
-            send_mdb(1, checksum);
+            send_mdb(MDB_USART, cd.reader_cfg);
+            send_mdb(MDB_USART, cd.feature_level);
+            send_mdb(MDB_USART, (cd.country_code >> 8));
+            send_mdb(MDB_USART, (cd.country_code & 0xFF));
+            send_mdb(MDB_USART, cd.scale_factor);
+            send_mdb(MDB_USART, cd.decimal_places);
+            send_mdb(MDB_USART, cd.max_resp_time);
+            send_mdb(MDB_USART, cd.misc_options);
+            send_mdb(MDB_USART, checksum);
             
             state = 2;
             
@@ -215,7 +215,7 @@ void mdb_setup(void) {
 		case 1:
         
             #if DEBUG == 1
-            send_str_p(0, PSTR("SETUP STAGE 2\r\n"));
+            send_str_p(UPLINK_USART, PSTR("SETUP STAGE 2\r\n"));
             #endif
             
             // store VMC price data
@@ -223,7 +223,7 @@ void mdb_setup(void) {
             price.min = (data[3] << 8) | data[4];
 
 	        // send ACK
-	        send_mdb(1, 0x100);
+	        send_mdb(MDB_USART, 0x100);
 
             // Set MDB State
             mdb_state = MDB_DISABLED;
@@ -239,14 +239,14 @@ void mdb_setup(void) {
         // ACK from VMC for MateDealer cfg data
 		case 2:
             // Wait for enough data in buffer
-            if(buffer_level(1,RX) < 2) return; 
+            if(buffer_level(MDB_USART,RX) < 2) return; 
             
             #if DEBUG == 1
-            send_str_p(0, PSTR("SETUP WAIT FOR ACK\r\n"));
+            send_str_p(UPLINK_USART, PSTR("SETUP WAIT FOR ACK\r\n"));
             #endif
             
 			// Check if VMC sent ACK
-			data[0] = recv_mdb(1);
+			data[0] = recv_mdb(MDB_USART);
             
             /*
              * The following check if VMC answers with ACK to the Setup data we send is not as in the MDB Spec defined.
@@ -258,7 +258,7 @@ void mdb_setup(void) {
 				state = 0;
 				mdb_active_cmd = MDB_IDLE;
 				mdb_poll_reply = MDB_REPLY_ACK;
-				send_str_p(0,PSTR("Error: no ACK received on [SETUP]"));
+				send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [SETUP]"));
                 return;    
 			}
             
@@ -270,7 +270,7 @@ void mdb_setup(void) {
 
 		// Unknown Subcommand from VMC
 		default:
-            send_str_p(0,PSTR("Error: unknown subcommand [SETUP]\r\n"));
+            send_str_p(UPLINK_USART,PSTR("Error: unknown subcommand [SETUP]\r\n"));
             state = 0;
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
@@ -286,18 +286,18 @@ void mdb_poll(void) {
     
     if(state == 0) {
         // Wait for enough data in buffer
-        if(buffer_level(1,RX) < 2) return; 
+        if(buffer_level(MDB_USART,RX) < 2) return; 
         
         #if DEBUG == 1
-        send_str_p(0, PSTR("POLL\r\n"));
+        send_str_p(UPLINK_USART, PSTR("POLL\r\n"));
         #endif
         
         // validate checksum
-        if(recv_mdb(1) != MDB_POLL) {
+        if(recv_mdb(MDB_USART) != MDB_POLL) {
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             state = 0;
-            send_str_p(0,PSTR("Error: Invalid checksum [Poll]\r\n"));
+            send_str_p(UPLINK_USART,PSTR("Error: Invalid checksum [Poll]\r\n"));
             return;  
         } 
         state = 1;
@@ -307,7 +307,7 @@ void mdb_poll(void) {
         
         case MDB_REPLY_ACK:
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             state = 0;
@@ -316,20 +316,20 @@ void mdb_poll(void) {
         case MDB_REPLY_JUST_RESET:
             // send JUST RESET
             if(state == 1) {
-                send_mdb(1, 0x000);
-                send_mdb(1, 0x100);
+                send_mdb(MDB_USART, 0x000);
+                send_mdb(MDB_USART, 0x100);
                 state = 2;
             }
             // wait for the ACK
             else if(state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [JUST RESET]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [JUST RESET]\r\n"));
                     return;    
                 }
 
@@ -350,26 +350,26 @@ void mdb_poll(void) {
 
         case MDB_REPLY_BEGIN_SESSION:
             if(session.start.flag && state == 1) {
-                send_mdb(1, 0x003);
-                send_mdb(1, (session.start.funds >> 8));
-                send_mdb(1, (session.start.funds & 0xFF));
+                send_mdb(MDB_USART, 0x003);
+                send_mdb(MDB_USART, (session.start.funds >> 8));
+                send_mdb(MDB_USART, (session.start.funds & 0xFF));
                 checksum = 0x003 + (session.start.funds >> 8) + (session.start.funds & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
-                send_mdb(1, checksum);
+                send_mdb(MDB_USART, checksum);
                 state = 2;
             }
             
             else if(session.start.flag && state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
                     session.start.funds = 0;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [START SESSION]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [START SESSION]\r\n"));
                     return;    
                 }
                 session.start.flag = 0;
@@ -384,21 +384,21 @@ void mdb_poll(void) {
 
         case MDB_REPLY_SESSION_CANCEL_REQ:
             if(state == 1) {
-                send_mdb(1, 0x004);
-                send_mdb(1, 0x104);
+                send_mdb(MDB_USART, 0x004);
+                send_mdb(MDB_USART, 0x104);
                 state = 2;
             }
             else if(state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
                     session.start.funds = 0;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [SESSION CANCEL REQ]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [SESSION CANCEL REQ]\r\n"));
                     return;    
                 }
                 session.start.flag = 0;
@@ -412,25 +412,25 @@ void mdb_poll(void) {
         
         case MDB_REPLY_VEND_APPROVED:
             if(session.result.vend_approved && state == 1) {
-                send_mdb(1, 0x005);
-                send_mdb(1, (session.result.vend_amount >> 8));
-                send_mdb(1, (session.result.vend_amount & 0xFF));
+                send_mdb(MDB_USART, 0x005);
+                send_mdb(MDB_USART, (session.result.vend_amount >> 8));
+                send_mdb(MDB_USART, (session.result.vend_amount & 0xFF));
                 checksum = 0x005 + (session.result.vend_amount >> 8) + (session.result.vend_amount & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
-                send_mdb(1, checksum);
+                send_mdb(MDB_USART, checksum);
                 state = 2;
             }
             else if(session.result.vend_approved && state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.result.vend_approved = 0;
                     session.result.vend_amount = 0;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [VEND APPROVE]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [VEND APPROVE]\r\n"));
                     return;    
                 }
                 session.result.vend_approved = 0;
@@ -444,22 +444,22 @@ void mdb_poll(void) {
         
         case MDB_REPLY_VEND_DENIED:
             if(session.result.vend_denied && state == 1) {
-                send_mdb(1, 0x006);
-                send_mdb(1, 0x106);
+                send_mdb(MDB_USART, 0x006);
+                send_mdb(MDB_USART, 0x106);
                 state = 2;
             }
             else if(session.result.vend_denied && state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
                     session.start.funds = 0;
                     session.result.vend_denied = 0;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [VEND DENY]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [VEND DENY]\r\n"));
                     return;    
                 }
                 session.start.flag = 0;
@@ -474,19 +474,19 @@ void mdb_poll(void) {
         
         case MDB_REPLY_END_SESSION:
             if(state == 1) {
-                send_mdb(1, 0x007);
-                send_mdb(1, 0x107);
+                send_mdb(MDB_USART, 0x007);
+                send_mdb(MDB_USART, 0x107);
                 state = 2;
             }
             else if(state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [END SESSION]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [END SESSION]\r\n"));
                     return;    
                 }
                 mdb_active_cmd = MDB_IDLE;
@@ -498,19 +498,19 @@ void mdb_poll(void) {
         
         case MDB_REPLY_CANCELED:
             if(state == 1) {
-                send_mdb(1, 0x008);
-                send_mdb(1, 0x108);
+                send_mdb(MDB_USART, 0x008);
+                send_mdb(MDB_USART, 0x108);
                 state = 2;
             }
             else if(state == 2) {
                 // wait for enough data in Buffer
-                if(buffer_level(1,RX) < 2) return; 
+                if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(1) != 0x000) {
+                if(recv_mdb(MDB_USART) != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
-                    send_str_p(0,PSTR("Error: no ACK received on [REPLY CANCELED]\r\n"));
+                    send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [REPLY CANCELED]\r\n"));
                     return;    
                 }
                 mdb_active_cmd = MDB_IDLE;
@@ -545,10 +545,10 @@ void mdb_vend(void) {
     // wait for the subcommand 
     if(state == 0) {
         // wait for enough data in buffer
-        if(buffer_level(1,RX) < 2) return;   
+        if(buffer_level(MDB_USART,RX) < 2) return;   
         
         // fetch the subommand from Buffer
-        data[0] = recv_mdb(1);
+        data[0] = recv_mdb(MDB_USART);
         state = 1;
     }
     
@@ -557,15 +557,15 @@ void mdb_vend(void) {
         // vend request 
         case 0:
             // wait for enough data in buffer
-            if(buffer_level(1,RX) < 10) return;     
+            if(buffer_level(MDB_USART,RX) < 10) return;     
 
             #if DEBUG == 1
-            send_str_p(0, PSTR("VEND REQUEST\r\n"));
+            send_str_p(UPLINK_USART, PSTR("VEND REQUEST\r\n"));
             #endif
             
             // fetch the data from buffer
             for(uint8_t i=1; i < 6; i++) {
-                data[i] = (uint8_t) recv_mdb(1);
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
             }
             
             // calculate checksum
@@ -578,7 +578,7 @@ void mdb_vend(void) {
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 checksum = MDB_VEND;
-                send_str_p(0,PSTR("Error: invalid checksum [VEND]\r\n"));
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [VEND]\r\n"));
                 return;  
             }
             
@@ -586,7 +586,7 @@ void mdb_vend(void) {
             send_str(0,buffer);  
                 
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             state = 0;
             mdb_state = MDB_VENDING;
             mdb_active_cmd = MDB_IDLE;
@@ -597,14 +597,14 @@ void mdb_vend(void) {
         // vend cancel
         case 1:  
             // wait for enough data in buffer
-            if(buffer_level(1,RX) < 2) return;     
+            if(buffer_level(MDB_USART,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str_p(0, PSTR("VEND Cancel\r\n"));
+            send_str_p(UPLINK_USART, PSTR("VEND Cancel\r\n"));
             #endif
             
             // fetch the data from buffer
-            data[1] = (uint8_t) recv_mdb(1);
+            data[1] = (uint8_t) recv_mdb(MDB_USART);
             
             // calculate checksum
             checksum += data[0];
@@ -616,14 +616,14 @@ void mdb_vend(void) {
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 checksum = MDB_VEND;
-                send_str_p(0,PSTR("Error: invalid checksum [VEND]\r\n"));
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [VEND]\r\n"));
                 return;  
             }
             
-            send_str_p(0,PSTR("vend-cancel\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("vend-cancel\r\n"));  
                 
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             state = 0;
             mdb_state = MDB_SESSION_IDLE;
             mdb_active_cmd = MDB_IDLE;
@@ -634,15 +634,15 @@ void mdb_vend(void) {
         // vend success
         case 2:  
             // wait for enough data in buffer
-            if(buffer_level(1,RX) < 6) return;     
+            if(buffer_level(MDB_USART,RX) < 6) return;     
 
             #if DEBUG == 1
-            send_str_p(0, PSTR("VEND SUCCESS\r\n"));
+            send_str_p(UPLINK_USART, PSTR("VEND SUCCESS\r\n"));
             #endif
             
             // fetch the data from buffer
             for(uint8_t i=1; i < 4; i++) {
-                data[i] = (uint8_t) recv_mdb(1);
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
             }
             
             // calculate checksum
@@ -655,7 +655,7 @@ void mdb_vend(void) {
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 checksum = MDB_VEND;
-                send_str_p(0,PSTR("Error: invalid checksum [VEND]\r\n"));
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [VEND]\r\n"));
                 return;  
             }
             
@@ -663,7 +663,7 @@ void mdb_vend(void) {
             send_str(0,buffer);  
                 
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             state = 0;
             mdb_state = MDB_SESSION_IDLE;
             mdb_active_cmd = MDB_IDLE;
@@ -674,14 +674,14 @@ void mdb_vend(void) {
         // vend failure
         case 3:  
             // wait for enough data in buffer
-            if(buffer_level(1,RX) < 2) return;     
+            if(buffer_level(MDB_USART,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str_p(0, PSTR("VEND FAILURE\r\n"));
+            send_str_p(UPLINK_USART, PSTR("VEND FAILURE\r\n"));
             #endif
             
             // fetch the data from buffer
-            data[1] = (uint8_t) recv_mdb(1);
+            data[1] = (uint8_t) recv_mdb(MDB_USART);
             
             // calculate checksum
             checksum += data[0];
@@ -693,14 +693,14 @@ void mdb_vend(void) {
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 checksum = MDB_VEND;
-                send_str_p(0,PSTR("Error: invalid checksum [VEND]\r\n"));
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [VEND]\r\n"));
                 return;  
             }
             
-            send_str_p(0,PSTR("vend-failure\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("vend-failure\r\n"));  
                 
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             state = 0;
             mdb_state = MDB_ENABLED;
             mdb_active_cmd = MDB_IDLE;
@@ -711,14 +711,14 @@ void mdb_vend(void) {
         // session complete
         case 4:  
             // wait for enough data in buffer
-            if(buffer_level(1,RX) < 2) return;     
+            if(buffer_level(MDB_USART,RX) < 2) return;     
 
             #if DEBUG == 1
-            send_str_p(0, PSTR("VEND SESSION COMPLETE\r\n"));
+            send_str_p(UPLINK_USART, PSTR("VEND SESSION COMPLETE\r\n"));
             #endif
             
             // fetch the data from buffer
-            data[1] = (uint8_t) recv_mdb(1);
+            data[1] = (uint8_t) recv_mdb(MDB_USART);
             
             // calculate checksum
             checksum += data[0];
@@ -730,14 +730,14 @@ void mdb_vend(void) {
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 checksum = MDB_VEND;
-                send_str_p(0,PSTR("Error: invalid checksum [VEND]\r\n"));
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [VEND]\r\n"));
                 return;  
             }
             
-            send_str_p(0,PSTR("session-complete\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("session-complete\r\n"));  
                 
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             state = 0;
             mdb_state = MDB_ENABLED;
             mdb_active_cmd = MDB_IDLE;
@@ -753,11 +753,11 @@ void mdb_reader(void) {
     uint8_t index = 0;
     
     // wait for enough data in buffer
-    if(buffer_level(1,RX) < 4) return;     
+    if(buffer_level(MDB_USART,RX) < 4) return;     
 
     // fetch the data from buffer
     for(index = 0; index < 2; index++) {
-        data[index] = recv_mdb(1);
+        data[index] = recv_mdb(MDB_USART);
     }
     
     // switch through subcommands
@@ -765,18 +765,18 @@ void mdb_reader(void) {
         // reader disable
         case 0:
             if(data[1] != 0x14) {
-                send_str_p(0,PSTR("Error: checksum error [READER]\r\n"));     
+                send_str_p(UPLINK_USART,PSTR("Error: checksum error [READER]\r\n"));     
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 return;
             }
             
             #if DEBUG == 1
-            send_str_p(0, PSTR("READER DISABLE\r\n"));
+            send_str_p(UPLINK_USART, PSTR("READER DISABLE\r\n"));
             #endif
             
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             mdb_state = MDB_DISABLED;
@@ -785,18 +785,18 @@ void mdb_reader(void) {
         // reader enable
         case 1:
             if(data[1] != 0x15) {
-                send_str_p(0,PSTR("Error: checksum error [READER]\r\n"));        
+                send_str_p(UPLINK_USART,PSTR("Error: checksum error [READER]\r\n"));        
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 return;
             }
             
             #if DEBUG == 1
-            send_str_p(0, PSTR("READER ENABLE\r\n"));
+            send_str_p(UPLINK_USART, PSTR("READER ENABLE\r\n"));
             #endif
             
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             mdb_state = MDB_ENABLED;
@@ -805,18 +805,18 @@ void mdb_reader(void) {
         // reader cancel
         case 2:
             if(data[1] != 0x16) {
-                send_str_p(0,PSTR("Error: checksum error [READER]\r\n"));        
+                send_str_p(UPLINK_USART,PSTR("Error: checksum error [READER]\r\n"));        
                 mdb_active_cmd = MDB_IDLE;
                 mdb_poll_reply = MDB_REPLY_ACK;
                 return;
             }
             
             #if DEBUG == 1
-            send_str_p(0, PSTR("READER CANCEL\r\n"));
+            send_str_p(UPLINK_USART, PSTR("READER CANCEL\r\n"));
             #endif
             
             // send ACK
-            send_mdb(1, 0x100);
+            send_mdb(MDB_USART, 0x100);
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_CANCELED;
             mdb_state = MDB_ENABLED;
@@ -824,7 +824,7 @@ void mdb_reader(void) {
 
         // unknown subcommand
         default:
-            send_str_p(0,PSTR("Error: unknown subcommand [READER]\r\n"));
+            send_str_p(UPLINK_USART,PSTR("Error: unknown subcommand [READER]\r\n"));
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             return;

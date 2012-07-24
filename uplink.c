@@ -71,7 +71,7 @@ void uplink_cmd_handler(void) {
     static uint8_t index = 0;
     
     // No data received, return
-    if(buffer_level(0,RX) < 1) return;
+    if(buffer_level(UPLINK_USART,RX) < 1) return;
     
     // flush cmd buffer if cmd is out of a valid length
     if(index == MAX_CMD_LENGTH) {
@@ -79,12 +79,12 @@ void uplink_cmd_handler(void) {
     }
 
     // append char to cmd
-    recv_char(0, &cmd[index]);
+    recv_char(UPLINK_USART, &cmd[index]);
     
     switch(cmd[index]) {
         case '\r':
             // carriage return received, replace with stringtermination and parse
-            send_str(0, "\r\n");
+            send_str(UPLINK_USART, "\r\n");
             cmd[index] = '\0';
             parse_cmd(cmd);
             index = 0;
@@ -95,7 +95,7 @@ void uplink_cmd_handler(void) {
         case '\b':
             // backspace, remove last received char
             index--;
-            send_char(0, '\b');
+            send_char(UPLINK_USART, '\b');
         break;
             // char is part of an ESC sequence
         case 0x1B:
@@ -107,7 +107,7 @@ void uplink_cmd_handler(void) {
             if(cmd[index - 1] == 0x5B && cmd[index - 2] == 0x1B) {
                     index = index - 2;
             } else {
-                send_char(0, cmd[index]);
+                send_char(UPLINK_USART, cmd[index]);
                 index++;
             }
     }
@@ -125,7 +125,7 @@ void parse_cmd(char *cmd) {
     // search in command list for the command
 	while(strcasecmp(CMD_LIST[index].cmd,tmp)) {
         if(CMD_LIST[index + 1].cmd == NULL) {
-            send_str_p(0,PSTR("Error: Unknown command\r\n"));    
+            send_str_p(UPLINK_USART,PSTR("Error: Unknown command\r\n"));    
             return;
         }
         index++;
@@ -142,37 +142,37 @@ void cmd_reset(char *arg) {
 }
 
 void cmd_help(char *arg) {
-    send_str_p(0, PSTR("-----------------------------------------------\r\n"));
-    send_str_p(0, PSTR("reset:\r\n   reset the Arduino\r\n"));
-    send_str_p(0, PSTR("info:\r\n   shows the VMC infos transfered during the setup process\r\n"));
-    send_str_p(0, PSTR("get-mdb-state:\r\n   displays the current MDB state.\r\n"));
-    send_str_p(0, PSTR("start-session <funds>:\r\n   starts a session with <funds> Euro Cents.\r\n"));
-    send_str_p(0, PSTR("approve-vend <vend-amount>:\r\n   approves a vend request with <vend-amount> Euro Cents.\r\n"));
-    send_str_p(0, PSTR("deny-vend:\r\n   denies a vend request.\r\n"));
-    send_str_p(0, PSTR("-----------------------------------------------\r\n"));
+    send_str_p(UPLINK_USART, PSTR("-----------------------------------------------\r\n"));
+    send_str_p(UPLINK_USART, PSTR("reset:\r\n   reset the Arduino\r\n"));
+    send_str_p(UPLINK_USART, PSTR("info:\r\n   shows the VMC infos transfered during the setup process\r\n"));
+    send_str_p(UPLINK_USART, PSTR("get-mdb-state:\r\n   displays the current MDB state.\r\n"));
+    send_str_p(UPLINK_USART, PSTR("start-session <funds>:\r\n   starts a session with <funds> Euro Cents.\r\n"));
+    send_str_p(UPLINK_USART, PSTR("approve-vend <vend-amount>:\r\n   approves a vend request with <vend-amount> Euro Cents.\r\n"));
+    send_str_p(UPLINK_USART, PSTR("deny-vend:\r\n   denies a vend request.\r\n"));
+    send_str_p(UPLINK_USART, PSTR("-----------------------------------------------\r\n"));
 }
 
 void cmd_info(char *arg) {
     if(mdb_state >= MDB_ENABLED) {
         char buffer[40];
-        send_str_p(0, PSTR("-----------------------------------------------\r\n"));
-        send_str_p(0,PSTR("## VMC configuration data ##\r\n")); 
+        send_str_p(UPLINK_USART, PSTR("-----------------------------------------------\r\n"));
+        send_str_p(UPLINK_USART,PSTR("## VMC configuration data ##\r\n")); 
         sprintf(buffer,"VMC feature level:       %d\r\n", vmc.feature_level);
-        send_str(0,buffer);  
+        send_str(UPLINK_USART,buffer);  
         sprintf(buffer,"VMC display columns:     %d\r\n", vmc.dispaly_cols);
-        send_str(0,buffer);  
+        send_str(UPLINK_USART,buffer);  
         sprintf(buffer,"VMC display rows:        %d\r\n", vmc.dispaly_rows);
-        send_str(0,buffer);  
+        send_str(UPLINK_USART,buffer);  
         sprintf(buffer,"VMC display info:        %d\r\n", vmc.dispaly_info);
-        send_str(0,buffer);  
-        send_str_p(0,PSTR("##    VMC price range     ##\r\n")); 
+        send_str(UPLINK_USART,buffer);  
+        send_str_p(UPLINK_USART,PSTR("##    VMC price range     ##\r\n")); 
         sprintf(buffer,"Maximum price:           %d\r\n", price.max);
-        send_str(0,buffer);  
+        send_str(UPLINK_USART,buffer);  
         sprintf(buffer,"Minimum price:           %d\r\n", price.min);
-        send_str(0,buffer);
-        send_str_p(0,PSTR("-----------------------------------------------\r\n"));  
+        send_str(UPLINK_USART,buffer);
+        send_str_p(UPLINK_USART,PSTR("-----------------------------------------------\r\n"));  
     } else {
-        send_str_p(0,PSTR("Error: Setup not yet completed!\r\n"));  
+        send_str_p(UPLINK_USART,PSTR("Error: Setup not yet completed!\r\n"));  
     }
 }
 
@@ -180,25 +180,25 @@ void cmd_get_mdb_state(char *arg) {
     
     switch(mdb_state) {
         case MDB_INACTIVE:
-            send_str_p(0,PSTR("INACTIVE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("INACTIVE\r\n"));  
         break;
         case MDB_DISABLED:
-            send_str_p(0,PSTR("DISABLED\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("DISABLED\r\n"));  
         break;
         case MDB_ENABLED:
-            send_str_p(0,PSTR("ENABLED\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("ENABLED\r\n"));  
         break;
         case MDB_SESSION_IDLE:
-            send_str_p(0,PSTR("SESSION IDLE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("SESSION IDLE\r\n"));  
         break;
         case MDB_VENDING:
-            send_str_p(0,PSTR("VEND\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("VEND\r\n"));  
         break;
         case MDB_REVALUE:
-            send_str_p(0,PSTR("REVALUE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("REVALUE\r\n"));  
         break;
         case MDB_NEGATIVE_VEND:
-            send_str_p(0,PSTR("NEGATIVE VEND\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("NEGATIVE VEND\r\n"));  
         break;
     }
     
@@ -211,10 +211,10 @@ void cmd_start_session(char *arg) {
             session.start.funds = atoi(arg);
             mdb_poll_reply = MDB_REPLY_BEGIN_SESSION;
         } else {
-            send_str_p(0,PSTR("Error: Session is already running\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("Error: Session is already running\r\n"));  
         }
     } else {
-        send_str_p(0,PSTR("Error: MateDealer not ready for a session\r\n"));  
+        send_str_p(UPLINK_USART,PSTR("Error: MateDealer not ready for a session\r\n"));  
     }
 }
 
@@ -224,7 +224,7 @@ void cmd_approve_vend(char *arg) {
         session.result.vend_amount = atoi(arg);
         mdb_poll_reply = MDB_REPLY_VEND_APPROVED;
     } else {
-        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to approve a vend\r\n"));  
+        send_str_p(UPLINK_USART,PSTR("Error: MateDealer is not in a suitable state to approve a vend\r\n"));  
     }
 }
 
@@ -233,7 +233,7 @@ void cmd_deny_vend(char *arg) {
         session.result.vend_denied = 1;
         mdb_poll_reply = MDB_REPLY_VEND_DENIED;
     } else {
-        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to deny a vend\r\n"));  
+        send_str_p(UPLINK_USART,PSTR("Error: MateDealer is not in a suitable state to deny a vend\r\n"));  
     }
 }
 
@@ -241,18 +241,6 @@ void cmd_cancel_session(char *arg) {
     if(mdb_state == MDB_SESSION_IDLE) {
         mdb_poll_reply = MDB_REPLY_SESSION_CANCEL_REQ;
     } else {
-        send_str_p(0,PSTR("Error: MateDealer is not in a suitable state to cancel a session\r\n"));  
+        send_str_p(UPLINK_USART,PSTR("Error: MateDealer is not in a suitable state to cancel a session\r\n"));  
     }
 }
-/*
-void cmd_read(void) {
-    uint8_t tmp = 0;
-    tmp = eeprom_read_byte(&eeByte);
-    itoa(tmp, buff, 10);
-    send_str(0,buff);
-}
-
-void cmd_write(void) {
-    eeprom_write_byte(&eeByte, cmd_var[0]); // schreiben
-}
-*/
