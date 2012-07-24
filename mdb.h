@@ -31,7 +31,15 @@
 
 #ifndef F_CPU
 #define F_CPU       16000000UL
-#endif // F_CPU
+#endif
+
+#ifndef TRUE
+#define TRUE        1
+#endif
+
+#ifndef FALSE
+#define FALSE       0
+#endif
 
 #define DEBUG       0
 

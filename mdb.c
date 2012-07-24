@@ -44,10 +44,13 @@ uint8_t mdb_state = MDB_INACTIVE;
 uint8_t mdb_poll_reply = MDB_REPLY_ACK;
 uint8_t mdb_active_cmd = MDB_IDLE;
 
+uint8_t reset_done = FALSE;
+
 extern volatile uint8_t cmd_var[MAX_VAR];
 
 vmcCfg_t vmc = {0,0,0,0};
 vmcPrice_t price = {0,0};
+
 cdCfg_t cd = {
     0x01,   // Reader CFG (constant)
     0x01,   // Feature Level [1,2,3]
@@ -76,6 +79,9 @@ void mdb_cmd_handler(void) {
             if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_READER) {
                 //Set command as active command
                 mdb_active_cmd = (data ^ 0x100);
+                if(!reset_done && mdb_active_cmd != MDB_RESET) {
+                    mdb_active_cmd = MDB_IDLE;
+                }
             }
         break;
         
@@ -128,7 +134,7 @@ void mdb_reset(void) {
 
     // Send ACK
     send_mdb(MDB_USART, 0x100);
- 
+    reset_done = TRUE;
     mdb_state = MDB_INACTIVE;
     mdb_active_cmd = MDB_IDLE;
 	mdb_poll_reply = MDB_REPLY_JUST_RESET;
