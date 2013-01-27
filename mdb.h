@@ -41,7 +41,7 @@
 #define FALSE       0
 #endif
 
-#define DEBUG       0
+#define DEBUG       1
 
 #define MDB_USART   1
 
