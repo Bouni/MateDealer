@@ -111,5 +111,6 @@ void mdb_setup(void);
 void mdb_poll(void);
 void mdb_vend(void);
 void mdb_reader(void);
+void mdb_dump(uint16_t);
 
 #endif // MDB_H

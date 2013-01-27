@@ -75,6 +75,11 @@ void mdb_cmd_handler(void) {
             if(buffer_level(MDB_USART,RX) < 2) return; 
             // read data from buffer
             uint16_t data = recv_mdb(MDB_USART);
+            
+            #if DEBUG == 1
+            mdb_dump(data);
+            #endif
+            
             // if modebit is set and command is in command range for cashless device
             if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_READER) {
                 //Set command as active command
@@ -115,9 +120,15 @@ void mdb_reset(void) {
     #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("RESET\r\n"));
     #endif
-    
+   
+    uint16_t data = recv_mdb(MDB_USART);
+     
+    #if DEBUG == 1
+    mdb_dump(data);
+    #endif
+
     // validate checksum
-	if(recv_mdb(MDB_USART) != MDB_RESET) {
+	if(data != MDB_RESET) {
 		mdb_active_cmd = MDB_IDLE;
 		mdb_poll_reply = MDB_REPLY_ACK;
         send_str_p(UPLINK_USART,PSTR("Error: invalid checksum for [RESET]\r\n"));
@@ -154,6 +165,10 @@ void mdb_setup(void) {
         // fetch the data from buffer
 		for(index = 0; index < 6; index++) {
             data[index] = (uint8_t) recv_mdb(MDB_USART);
+            
+            #if DEBUG == 1
+            mdb_dump(data[index]);
+            #endif
         }
 		
 		// calculate checksum
@@ -253,6 +268,10 @@ void mdb_setup(void) {
             
 			// Check if VMC sent ACK
 			data[0] = recv_mdb(MDB_USART);
+
+            #if DEBUG == 1
+            mdb_dump(data[0]);
+            #endif
             
             /*
              * The following check if VMC answers with ACK to the Setup data we send is not as in the MDB Spec defined.
@@ -298,8 +317,14 @@ void mdb_poll(void) {
         send_str_p(UPLINK_USART, PSTR("POLL\r\n"));
         #endif
         
+        uint16_t data = recv_mdb(MDB_USART);
+     
+        #if DEBUG == 1
+        mdb_dump(data);
+        #endif
+
         // validate checksum
-        if(recv_mdb(MDB_USART) != MDB_POLL) {
+        if(data != MDB_POLL) {
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             state = 0;
@@ -331,7 +356,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+    
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
@@ -369,7 +401,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+        
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
@@ -398,7 +437,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+        
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
@@ -430,7 +476,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+        
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.result.vend_approved = 0;
@@ -458,7 +511,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     session.start.flag = 0;
@@ -488,7 +548,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
@@ -512,7 +579,14 @@ void mdb_poll(void) {
                 // wait for enough data in Buffer
                 if(buffer_level(MDB_USART,RX) < 2) return; 
                 // check if VMC sent ACK
-                if(recv_mdb(MDB_USART) != 0x000) {
+
+                uint16_t data = recv_mdb(MDB_USART);
+     
+                #if DEBUG == 1
+                mdb_dump(data);
+                #endif
+
+                if(data != 0x000) {
                     mdb_active_cmd = MDB_IDLE;
                     mdb_poll_reply = MDB_REPLY_ACK;
                     state = 0;
@@ -555,6 +629,11 @@ void mdb_vend(void) {
         
         // fetch the subommand from Buffer
         data[0] = recv_mdb(MDB_USART);
+     
+        #if DEBUG == 1
+        mdb_dump(data[0]);
+        #endif
+    
         state = 1;
     }
     
@@ -572,6 +651,10 @@ void mdb_vend(void) {
             // fetch the data from buffer
             for(uint8_t i=1; i < 6; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
+        
+                #if DEBUG == 1
+                mdb_dump(data[i]);
+                #endif
             }
             
             // calculate checksum
@@ -612,6 +695,10 @@ void mdb_vend(void) {
             // fetch the data from buffer
             data[1] = (uint8_t) recv_mdb(MDB_USART);
             
+            #if DEBUG == 1
+            mdb_dump(data[1]);
+            #endif
+            
             // calculate checksum
             checksum += data[0];
             checksum &= 0xFF;
@@ -649,6 +736,10 @@ void mdb_vend(void) {
             // fetch the data from buffer
             for(uint8_t i=1; i < 4; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
+        
+                #if DEBUG == 1
+                mdb_dump(data[i]);
+                #endif
             }
             
             // calculate checksum
@@ -689,6 +780,10 @@ void mdb_vend(void) {
             // fetch the data from buffer
             data[1] = (uint8_t) recv_mdb(MDB_USART);
             
+            #if DEBUG == 1
+            mdb_dump(data[1]);
+            #endif
+
             // calculate checksum
             checksum += data[0];
             checksum &= 0xFF;
@@ -725,6 +820,10 @@ void mdb_vend(void) {
             
             // fetch the data from buffer
             data[1] = (uint8_t) recv_mdb(MDB_USART);
+        
+            #if DEBUG == 1
+            mdb_dump(data[1]);
+            #endif
             
             // calculate checksum
             checksum += data[0];
@@ -764,6 +863,10 @@ void mdb_reader(void) {
     // fetch the data from buffer
     for(index = 0; index < 2; index++) {
         data[index] = recv_mdb(MDB_USART);
+        
+        #if DEBUG == 1
+        mdb_dump(data[index]);
+        #endif
     }
     
     // switch through subcommands
@@ -839,3 +942,25 @@ void mdb_reader(void) {
 }
 
 
+void mdb_dump(uint16_t byte) {
+    char buffer[20];
+
+   if(byte < 0x08) {
+        send_str(UPLINK_USART,"RAW RX MDB: 0x00");
+        itoa(byte,buffer,16);
+        send_str(UPLINK_USART,buffer);
+        send_str(UPLINK_USART,"\n\r");
+    }
+    else if(byte >= 0x08 && byte <= 0x100) {
+        send_str(UPLINK_USART,"RAW RX MDB: 0x0");
+        itoa(byte,buffer,16);
+        send_str(UPLINK_USART,buffer);
+        send_str(UPLINK_USART,"\n\r");
+    }
+    else if(byte >= 0x100) {
+        send_str(UPLINK_USART,"RAW RX MDB: 0x");
+        itoa(byte,buffer,16);
+        send_str(UPLINK_USART,buffer);
+        send_str(UPLINK_USART,"\n\r");
+    }
+}
