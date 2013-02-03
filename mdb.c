@@ -77,11 +77,11 @@ void mdb_cmd_handler(void) {
             uint16_t data = recv_mdb(MDB_USART);
             
             #if DEBUG == 1
-            mdb_dump(data);
+            mdb_dump(RX,data);
             #endif
             
             // if modebit is set and command is in command range for cashless device
-            if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_READER) {
+            if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_EXPANSION) {
                 //Set command as active command
                 mdb_active_cmd = (data ^ 0x100);
                 if(!reset_done && mdb_active_cmd != MDB_RESET) {
@@ -109,6 +109,14 @@ void mdb_cmd_handler(void) {
         case MDB_READER:
             mdb_reader();
         break;
+
+        case MDB_REVALUE:
+            // Not yet implemented
+        break;
+        
+        case MDB_EXPANSION:
+            mdb_expansion();
+        break;
     }
 }
 
@@ -124,7 +132,7 @@ void mdb_reset(void) {
     uint16_t data = recv_mdb(MDB_USART);
      
     #if DEBUG == 1
-    mdb_dump(data);
+    mdb_dump(RX,data);
     #endif
 
     // validate checksum
@@ -145,6 +153,9 @@ void mdb_reset(void) {
 
     // Send ACK
     send_mdb(MDB_USART, 0x100);
+    #if DEBUG == 1
+    mdb_dump(TX,0x100);
+    #endif
     reset_done = TRUE;
     mdb_state = MDB_INACTIVE;
     mdb_active_cmd = MDB_IDLE;
@@ -167,7 +178,7 @@ void mdb_setup(void) {
             data[index] = (uint8_t) recv_mdb(MDB_USART);
             
             #if DEBUG == 1
-            mdb_dump(data[index]);
+            mdb_dump(RX,data[index]);
             #endif
         }
 		
@@ -224,6 +235,18 @@ void mdb_setup(void) {
             send_mdb(MDB_USART, cd.misc_options);
             send_mdb(MDB_USART, checksum);
             
+            #if DEBUG == 1
+            mdb_dump(TX,cd.reader_cfg);
+            mdb_dump(TX,cd.feature_level);
+            mdb_dump(TX,(cd.country_code >> 8));
+            mdb_dump(TX,(cd.country_code & 0xFF));
+            mdb_dump(TX,cd.scale_factor);
+            mdb_dump(TX,cd.decimal_places);
+            mdb_dump(TX,cd.max_resp_time);
+            mdb_dump(TX,cd.misc_options);
+            mdb_dump(TX,checksum);
+            #endif
+
             state = 2;
             
             // reset checksum for next stage
@@ -245,6 +268,9 @@ void mdb_setup(void) {
 
 	        // send ACK
 	        send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
 
             // Set MDB State
             mdb_state = MDB_DISABLED;
@@ -270,7 +296,7 @@ void mdb_setup(void) {
 			data[0] = recv_mdb(MDB_USART);
 
             #if DEBUG == 1
-            mdb_dump(data[0]);
+            mdb_dump(RX,data[0]);
             #endif
             
             /*
@@ -320,7 +346,7 @@ void mdb_poll(void) {
         uint16_t data = recv_mdb(MDB_USART);
      
         #if DEBUG == 1
-        mdb_dump(data);
+        mdb_dump(RX,data);
         #endif
 
         // validate checksum
@@ -339,6 +365,9 @@ void mdb_poll(void) {
         case MDB_REPLY_ACK:
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             state = 0;
@@ -349,6 +378,10 @@ void mdb_poll(void) {
             if(state == 1) {
                 send_mdb(MDB_USART, 0x000);
                 send_mdb(MDB_USART, 0x100);
+                #if DEBUG == 1
+                mdb_dump(TX,0x000);
+                mdb_dump(TX,0x100);
+                #endif
                 state = 2;
             }
             // wait for the ACK
@@ -360,7 +393,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -394,6 +427,12 @@ void mdb_poll(void) {
                 checksum = 0x003 + (session.start.funds >> 8) + (session.start.funds & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
                 send_mdb(MDB_USART, checksum);
+                #if DEBUG == 1
+                mdb_dump(TX,0x003);
+                mdb_dump(TX,(session.start.funds >> 8));
+                mdb_dump(TX,(session.start.funds & 0xFF));
+                mdb_dump(TX,checksum);
+                #endif
                 state = 2;
             }
             
@@ -405,7 +444,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -431,6 +470,10 @@ void mdb_poll(void) {
             if(state == 1) {
                 send_mdb(MDB_USART, 0x004);
                 send_mdb(MDB_USART, 0x104);
+                #if DEBUG == 1
+                mdb_dump(TX,0x004);
+                mdb_dump(TX,0x104);
+                #endif
                 state = 2;
             }
             else if(state == 2) {
@@ -441,7 +484,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -470,6 +513,12 @@ void mdb_poll(void) {
                 checksum = 0x005 + (session.result.vend_amount >> 8) + (session.result.vend_amount & 0xFF);
                 checksum = (checksum & 0xFF) | 0x100;
                 send_mdb(MDB_USART, checksum);
+                #if DEBUG == 1
+                mdb_dump(TX,0x005);
+                mdb_dump(TX,(session.result.vend_amount >> 8));
+                mdb_dump(TX,(session.result.vend_amount & 0xFF));
+                mdb_dump(TX,checksum);
+                #endif
                 state = 2;
             }
             else if(session.result.vend_approved && state == 2) {
@@ -480,7 +529,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -505,6 +554,10 @@ void mdb_poll(void) {
             if(session.result.vend_denied && state == 1) {
                 send_mdb(MDB_USART, 0x006);
                 send_mdb(MDB_USART, 0x106);
+                #if DEBUG == 1
+                mdb_dump(TX,0x006);
+                mdb_dump(TX,0x106);
+                #endif
                 state = 2;
             }
             else if(session.result.vend_denied && state == 2) {
@@ -515,7 +568,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -542,6 +595,10 @@ void mdb_poll(void) {
             if(state == 1) {
                 send_mdb(MDB_USART, 0x007);
                 send_mdb(MDB_USART, 0x107);
+                #if DEBUG == 1
+                mdb_dump(TX,0x007);
+                mdb_dump(TX,0x107);
+                #endif
                 state = 2;
             }
             else if(state == 2) {
@@ -552,7 +609,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -573,6 +630,10 @@ void mdb_poll(void) {
             if(state == 1) {
                 send_mdb(MDB_USART, 0x008);
                 send_mdb(MDB_USART, 0x108);
+                #if DEBUG == 1
+                mdb_dump(TX,0x008);
+                mdb_dump(TX,0x108);
+                #endif
                 state = 2;
             }
             else if(state == 2) {
@@ -583,7 +644,7 @@ void mdb_poll(void) {
                 uint16_t data = recv_mdb(MDB_USART);
      
                 #if DEBUG == 1
-                mdb_dump(data);
+                mdb_dump(RX,data);
                 #endif
 
                 if(data != 0x000) {
@@ -631,7 +692,7 @@ void mdb_vend(void) {
         data[0] = recv_mdb(MDB_USART);
      
         #if DEBUG == 1
-        mdb_dump(data[0]);
+        mdb_dump(RX,data[0]);
         #endif
     
         state = 1;
@@ -653,7 +714,7 @@ void mdb_vend(void) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
         
                 #if DEBUG == 1
-                mdb_dump(data[i]);
+                mdb_dump(RX,data[i]);
                 #endif
             }
             
@@ -676,6 +737,9 @@ void mdb_vend(void) {
                 
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             state = 0;
             mdb_state = MDB_VENDING;
             mdb_active_cmd = MDB_IDLE;
@@ -696,7 +760,7 @@ void mdb_vend(void) {
             data[1] = (uint8_t) recv_mdb(MDB_USART);
             
             #if DEBUG == 1
-            mdb_dump(data[1]);
+            mdb_dump(RX,data[1]);
             #endif
             
             // calculate checksum
@@ -717,6 +781,9 @@ void mdb_vend(void) {
                 
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             state = 0;
             mdb_state = MDB_SESSION_IDLE;
             mdb_active_cmd = MDB_IDLE;
@@ -738,7 +805,7 @@ void mdb_vend(void) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
         
                 #if DEBUG == 1
-                mdb_dump(data[i]);
+                mdb_dump(RX,data[i]);
                 #endif
             }
             
@@ -761,6 +828,9 @@ void mdb_vend(void) {
                 
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             state = 0;
             mdb_state = MDB_SESSION_IDLE;
             mdb_active_cmd = MDB_IDLE;
@@ -781,7 +851,7 @@ void mdb_vend(void) {
             data[1] = (uint8_t) recv_mdb(MDB_USART);
             
             #if DEBUG == 1
-            mdb_dump(data[1]);
+            mdb_dump(RX,data[1]);
             #endif
 
             // calculate checksum
@@ -802,6 +872,9 @@ void mdb_vend(void) {
                 
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             state = 0;
             mdb_state = MDB_ENABLED;
             mdb_active_cmd = MDB_IDLE;
@@ -822,7 +895,7 @@ void mdb_vend(void) {
             data[1] = (uint8_t) recv_mdb(MDB_USART);
         
             #if DEBUG == 1
-            mdb_dump(data[1]);
+            mdb_dump(RX,data[1]);
             #endif
             
             // calculate checksum
@@ -843,6 +916,9 @@ void mdb_vend(void) {
                 
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             state = 0;
             mdb_state = MDB_ENABLED;
             mdb_active_cmd = MDB_IDLE;
@@ -865,7 +941,7 @@ void mdb_reader(void) {
         data[index] = recv_mdb(MDB_USART);
         
         #if DEBUG == 1
-        mdb_dump(data[index]);
+        mdb_dump(RX,data[index]);
         #endif
     }
     
@@ -886,6 +962,9 @@ void mdb_reader(void) {
             
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             mdb_state = MDB_DISABLED;
@@ -906,6 +985,9 @@ void mdb_reader(void) {
             
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             mdb_state = MDB_ENABLED;
@@ -926,6 +1008,9 @@ void mdb_reader(void) {
             
             // send ACK
             send_mdb(MDB_USART, 0x100);
+            #if DEBUG == 1
+            mdb_dump(TX,0x100);
+            #endif
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_CANCELED;
             mdb_state = MDB_ENABLED;
@@ -941,24 +1026,82 @@ void mdb_reader(void) {
     }
 }
 
+void mdb_expansion(void) {  
 
-void mdb_dump(uint16_t byte) {
+    static uint8_t data[29] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    uint8_t checksum = MDB_EXPANSION;
+
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
+    #endif
+
+    if(buffer_level(MDB_USART,RX) < 58) return;     
+
+    for(uint8_t i=0; i<29; i++) {
+        data[i] = recv_mdb(MDB_USART);
+        #if DEBUG == 1
+        mdb_dump(RX,data[i]);
+        #endif
+        if(i != 29) {
+            checksum += data[i];
+        }
+    }
+
+    // validate checksum
+    if(checksum != data[29]) {
+        mdb_active_cmd = MDB_IDLE;
+        mdb_poll_reply = MDB_REPLY_ACK;
+        checksum = MDB_EXPANSION;
+        send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [EXPANSION]\r\n"));
+        return;  
+    }
+    
+    // fool the VMC and reply its own config back ;-)
+    send_mdb(MDB_USART, 0x009);
+    #if DEBUG == 1
+    mdb_dump(TX,0x009);
+    #endif
+    for(uint8_t j=0; j<29; j++) {
+        send_mdb(MDB_USART,data[j]);
+        #if DEBUG == 1
+        mdb_dump(TX,data[j]);
+        #endif
+    }
+
+    mdb_active_cmd = MDB_IDLE;
+    mdb_poll_reply = MDB_REPLY_ACK;
+
+}
+
+void mdb_dump(uint8_t dir,uint16_t byte) {
     char buffer[20];
 
-   if(byte < 0x08) {
-        send_str(UPLINK_USART,"RAW RX MDB: 0x00");
+   if(byte < 0x10) {
+        if(dir == RX) {
+            send_str(UPLINK_USART,"RAW RX MDB: 0x00");
+        } else {
+            send_str(UPLINK_USART,"RAW TX MDB: 0x00");
+        }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
         send_str(UPLINK_USART,"\n\r");
     }
-    else if(byte >= 0x08 && byte <= 0x100) {
-        send_str(UPLINK_USART,"RAW RX MDB: 0x0");
+    else if(byte >= 0x10 && byte <= 0x100) {
+        if(dir == RX) {
+            send_str(UPLINK_USART,"RAW RX MDB: 0x0");
+        } else {
+            send_str(UPLINK_USART,"RAW TX MDB: 0x0");
+        }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
         send_str(UPLINK_USART,"\n\r");
     }
     else if(byte >= 0x100) {
-        send_str(UPLINK_USART,"RAW RX MDB: 0x");
+        if(dir == RX) {
+            send_str(UPLINK_USART,"RAW RX MDB: 0x");
+        } else {
+            send_str(UPLINK_USART,"RAW TX MDB: 0x");
+        }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
         send_str(UPLINK_USART,"\n\r");
