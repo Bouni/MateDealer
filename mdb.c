@@ -1094,7 +1094,7 @@ void mdb_dump(uint8_t dir,uint16_t byte) {
         send_str(UPLINK_USART,buffer);
         send_str(UPLINK_USART,"\n\r");
     }
-    else if(byte >= 0x10 && byte <= 0x100) {
+    else if(byte >= 0x10 && byte < 0x100) {
         if(dir == RX) {
             send_str(UPLINK_USART,"RAW RX MDB: 0x0");
         } else {
