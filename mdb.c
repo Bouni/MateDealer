@@ -1028,29 +1028,31 @@ void mdb_reader(void) {
 
 void mdb_expansion(void) {  
 
-    static uint8_t data[30] = {0,0,0,0,0,0,0,0,0,0,
+
+    static uint8_t data[32] = {0,0,0,0,0,0,0,0,0,0,
                                0,0,0,0,0,0,0,0,0,0,
-                               0,0,0,0,0,0,0,0,0,0};
+                               0,0,0,0,0,0,0,0,0,0,
+                               0,0};
     uint8_t checksum = MDB_EXPANSION;
 
-    if(buffer_level(MDB_USART,RX) < 60) return;     
+    if(buffer_level(MDB_USART,RX) < 64) return;     
     
     #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
     #endif
 
-    for(uint8_t i=0; i<30; i++) {
+    for(uint8_t i=0; i<=31; i++) {
         data[i] = (uint8_t) recv_mdb(MDB_USART);
         #if DEBUG == 1
         mdb_dump(RX,data[i]);
         #endif
-        if(i != 29) {
+        if(i < 31) {
             checksum += data[i];
         }
     }
 
     // validate checksum
-    if(checksum != data[29]) {
+    if(checksum != data[31]) {
         mdb_active_cmd = MDB_IDLE;
         mdb_poll_reply = MDB_REPLY_ACK;
         checksum = MDB_EXPANSION;
@@ -1059,12 +1061,9 @@ void mdb_expansion(void) {
     }
     
     // fool the VMC and reply its own config back ;-)
-    send_mdb(MDB_USART, 0x009);
     checksum = 0x09;
-    #if DEBUG == 1
-    mdb_dump(TX,0x009);
-    #endif
-    for(uint8_t j=1; j<29; j++) {
+
+    for(uint8_t j=1; j<=30; j++) {
         send_mdb(MDB_USART,data[j]);
         checksum += data[j];
         #if DEBUG == 1
@@ -1082,7 +1081,8 @@ void mdb_expansion(void) {
 }
 
 void mdb_dump(uint8_t dir,uint16_t byte) {
-    char buffer[20];
+
+   char buffer[20];
 
    if(byte < 0x10) {
         if(dir == RX) {
