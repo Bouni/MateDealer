@@ -1027,12 +1027,8 @@ void mdb_reader(void) {
 }
 
 void mdb_expansion(void) {  
+    static uint8_t data[32];
 
-
-    static uint8_t data[32] = {0,0,0,0,0,0,0,0,0,0,
-                               0,0,0,0,0,0,0,0,0,0,
-                               0,0,0,0,0,0,0,0,0,0,
-                               0,0};
     uint8_t checksum = MDB_EXPANSION;
 
     if(buffer_level(MDB_USART,RX) < 64) return;     
@@ -1041,18 +1037,18 @@ void mdb_expansion(void) {
     send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
     #endif
 
-    for(uint8_t i=0; i<=31; i++) {
+    for(uint8_t i=0; i<31; i++) {
         data[i] = (uint8_t) recv_mdb(MDB_USART);
         #if DEBUG == 1
         mdb_dump(RX,data[i]);
         #endif
-        if(i < 31) {
+        if(i != 30) {
             checksum += data[i];
         }
     }
 
     // validate checksum
-    if(checksum != data[31]) {
+    if(checksum != data[30]) {
         mdb_active_cmd = MDB_IDLE;
         mdb_poll_reply = MDB_REPLY_ACK;
         checksum = MDB_EXPANSION;
