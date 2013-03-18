@@ -1082,9 +1082,9 @@ void mdb_dump(uint8_t dir,uint16_t byte) {
 
    if(byte < 0x10) {
         if(dir == RX) {
-            send_str(UPLINK_USART,"RAW RX MDB: 0x00");
+            send_str(UPLINK_USART,">0x00");
         } else {
-            send_str(UPLINK_USART,"RAW TX MDB: 0x00");
+            send_str(UPLINK_USART,"<0x00");
         }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
@@ -1092,9 +1092,9 @@ void mdb_dump(uint8_t dir,uint16_t byte) {
     }
     else if(byte >= 0x10 && byte < 0x100) {
         if(dir == RX) {
-            send_str(UPLINK_USART,"RAW RX MDB: 0x0");
+            send_str(UPLINK_USART,">0x0");
         } else {
-            send_str(UPLINK_USART,"RAW TX MDB: 0x0");
+            send_str(UPLINK_USART,"<0x0");
         }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
@@ -1102,9 +1102,9 @@ void mdb_dump(uint8_t dir,uint16_t byte) {
     }
     else if(byte >= 0x100) {
         if(dir == RX) {
-            send_str(UPLINK_USART,"RAW RX MDB: 0x");
+            send_str(UPLINK_USART,">0x");
         } else {
-            send_str(UPLINK_USART,"RAW TX MDB: 0x");
+            send_str(UPLINK_USART,"<0x");
         }
         itoa(byte,buffer,16);
         send_str(UPLINK_USART,buffer);
