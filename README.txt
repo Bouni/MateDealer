@@ -10,8 +10,8 @@ Note: The Arduino Mega2560 by default resets every time you connect to it via se
 
 For more information, see the website at: https://reaktor23.org/de/projects/mate_dealer
 
-For bugs, contributions, suggestions, or anything else use our Mailinglist:
-reaktor23@lists.reaktor23.org
+For bugs, contributions, suggestions, or anything else send an E-Mail to:
+info@reaktor23.org
 
 Appendix:
 -------
