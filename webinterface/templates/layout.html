@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+	<head>
+        <title>MateDealer</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="HandheldFriendly" content="True">
+        <meta name="MobileOptimized" content="320">
+        <link href="/static/img/favicon.ico" rel="shortcut icon" />
+        <link href="/static/css/simplegrid.css" rel="stylesheet" type="text/css" title="default" />
+        <link href="/static/css/style.css" rel="stylesheet" type="text/css" title="default" />
+    </head>
+
+    <body>
+
+        <!---- Header ---->
+        <div class="header">
+            <h1>MateDealer</h1>
+        </div>
+        <div class="grid">
+            <div class="col-1-1 menu">
+        {% if g.user.is_authenticated() %}
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Statistik</a></li>
+                    <li><a href="{{ url_for('vending') }}">Getränke</a></li>
+                    <li><a href="{{ url_for('admin') }}">Administration</a></li>
+                </ul>    
+        {% endif %}
+            </div>
+        </div>
+		<!---- Content ---->
+		{% block body %}Oops.{% endblock %}
+
+        <!---- Footer ---->    
+        <div class="footer">
+        </div>
+    </body>
+</html>

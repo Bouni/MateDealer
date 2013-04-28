@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1">
+                    {% if not g.lock.is_locked() %}
+                    <form action="" method="post" name="login">
+                        {{form.hidden_tag()}}
+                        <p>
+                            <label for="user">Username</label></br>
+                            {{form.user(size=80)}}
+                            {% for error in form.errors.user %}
+                            <span style="display: block; color: red;">{{error}}</span>
+                            {% endfor %}<br>
+                        </p>
+                        <p>
+                            <label for="password">Password</label></br>
+                            {{form.password(size=80)}}
+                            {% for error in form.errors.password %}
+                            <span style="display: block; color: red;">{{error}}</span>
+                            {% endfor %}<br>
+                        </p>
+                        {% if form.errors.loginerror %}
+                        <span style="display: block; color: red;">Login Fehlgeschlagen!</span>
+                        {% endif %}
+                        <p><input type="submit" value="Login"></p>
+                    </form>
+                    {% else %}
+                    <h2>Der MateDealer ist momentan gerade von <strong style="color: orange">{{ g.lock.get_locker() }}</strong> belegt!</br>Komm in {{ g.lock.time_left() }} Minuten wieder :-)</h2>
+                    
+                    <a href="{{ url_for('index') }}">Zurück zur Statistik</a>
+                    {% endif %}
+                </div>
+            </div>        
+		</div>
+{% endblock %}

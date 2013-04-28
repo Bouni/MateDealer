@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1">
+                    <h1>Fehler: 404</h1>
+                    <p>Leider können wir die angeforderte Seite nicht finden!</p>
+                    <a href="{{ url_for("index")}}">Zurück zur Startseite</a>
+                </div>
+            </div>        
+		</div>
+{% endblock %}

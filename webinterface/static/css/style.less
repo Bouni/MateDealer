@@ -1,0 +1,178 @@
+@font-face {
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 300;
+    src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url('../fonts/SourceSansPro.ttf') format('truetype');
+}
+
+//###########################################################
+//# Colors
+//###########################################################
+
+@color-grey1: rgba(102, 102, 102, 1);
+@color-grey2: rgba(243, 243, 243, 0.5);
+@color-red1: rgba(206, 0, 5, 1);
+@color-border: rgba(226, 225, 225, 1);
+
+//###########################################################
+//# Fonts
+//###########################################################
+
+@main-font: 'Source Sans Pro', sans-serif;
+@h1-font-size: 1.8em;
+
+//###########################################################
+//# Functions
+//###########################################################
+
+.border-radius(@a, @b, @c, @d) {
+    -webkit-border-radius: @a @b @c @d;
+    -moz-border-radius: @a @b @c @d;
+    -ms-border-radius: @a @b @c @d;
+    -o-border-radius: @a @b @c @d;
+    border-radius: @a @b @c @d;
+}
+
+.box-shadow() {
+    -webkit-box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+    -moz-box-shadow: rgba(0,0,0,0.25) 0 1px 4px;
+    box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+}
+
+.box-sizing() {
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+//###########################################################
+//# Styles
+//###########################################################
+
+body {
+    text-align:center;
+    font-family: @main-font; 
+    font-weight: 300;
+}
+
+h1 {
+    font-size: @h1-font-size;
+    font-weight: 300;
+    padding: 5px 20px 5px 20px;
+    margin: 0;
+}
+
+h2 {
+    font-size: (@h1-font-size / 1.2);
+    font-weight: 300;
+    padding: 5px 0px 5px 0px;
+    margin: 0;
+}
+
+h3 {
+    font-size: (@h1-font-size / 1.8);
+    font-weight: 300;
+    padding: 5px 0px 5px 0px;
+    margin: 0;
+}
+
+a {
+    text-decoration: none;
+    color: @color-grey1;
+    &:hover { 
+    cursor: pointer;
+    }
+}
+
+.polaroid {
+    .border-radius(0.3em,0.3em,0.3em,0.3em);
+    .box-shadow();
+    .box-sizing();
+    border: white 0.5em solid; 
+}
+
+.header {
+    height: 140px;
+    background-color: @color-grey2;
+    border-bottom: 1px solid @color-border;
+}
+
+
+.content {
+    display: inline-block;
+    max-width: 1000px;
+    width: 100%;
+    .border-radius(4px, 4px, 4px, 4px);
+    border: 1px solid @color-border;
+    background-color: @color-grey2;
+    padding: 5px;
+}
+
+.spacer {
+    .box-sizing();
+    margin-left: 10px;
+    margin-right: 10px;
+    height: 14px;
+    background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC") repeat-x scroll left top transparent;
+}
+
+.menu {
+    display: inline-block;
+    ul {
+        width: 100%;
+        margin: 0px auto;
+        padding: 0px 40px 0px 50px;
+        font-size: 1.8em;
+        display: inline-block;
+        li {
+            background-color: @color-grey2;
+            padding: 5px;
+            border-right: 1px solid @color-border;
+            border-bottom: 1px solid @color-border;
+            border-top: 1px solid @color-border;
+            list-style-type: none;
+            float: left;
+            width: 33%;
+            &:first-child {
+                .border-radius(4px, 0px, 0px, 4px);
+                border-left: 1px solid @color-border;
+            } 
+            &:last-child {
+                .border-radius(0px, 4px, 4px, 0px);
+            }
+        } 
+    }
+}
+
+form[name='login'] {
+    input[type='text'],
+    input[type='password'] {
+        padding: 0 10px;
+        width: 300px;
+        height: 40px;
+        color: #bbb;
+        border: 1px solid @color-border;
+        .border-radius(4px, 4px, 4px, 4px);
+        font-size: 1.2em;
+    }
+    input[type='submit'] {
+        padding: 0 10px;
+        width: 100px;
+        height: 40px;
+        color: #666; 
+        background-color: rgb(255, 255, 255);
+        border: 1px solid @color-border;
+        .border-radius(4px, 4px, 4px, 4px);
+        font-size: 0.9em;
+    }
+}
+
+@media handheld, only screen and (max-width: 767px) {
+    
+    .footer {
+        font-size: 0.8em;
+    }
+ 
+}
+
+

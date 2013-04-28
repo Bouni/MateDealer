@@ -1,0 +1,145 @@
+@font-face {
+  font-family: 'Source Sans Pro';
+  font-style: normal;
+  font-weight: 300;
+  src: local('Source Sans Pro'), local('SourceSansPro-Regular'), url('../fonts/SourceSansPro.ttf') format('truetype');
+}
+body {
+  text-align: center;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-weight: 300;
+}
+h1 {
+  font-size: 1.8em;
+  font-weight: 300;
+  padding: 5px 20px 5px 20px;
+  margin: 0;
+}
+h2 {
+  font-size: 1.5em;
+  font-weight: 300;
+  padding: 5px 0px 5px 0px;
+  margin: 0;
+}
+h3 {
+  font-size: 1em;
+  font-weight: 300;
+  padding: 5px 0px 5px 0px;
+  margin: 0;
+}
+a {
+  text-decoration: none;
+  color: #666666;
+}
+a:hover {
+  cursor: pointer;
+}
+.polaroid {
+  -webkit-border-radius: 0.3em 0.3em 0.3em 0.3em;
+  -moz-border-radius: 0.3em 0.3em 0.3em 0.3em;
+  -ms-border-radius: 0.3em 0.3em 0.3em 0.3em;
+  -o-border-radius: 0.3em 0.3em 0.3em 0.3em;
+  border-radius: 0.3em 0.3em 0.3em 0.3em;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+  -moz-box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+  box-shadow: rgba(0, 0, 0, 0.25) 0 1px 4px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  border: white 0.5em solid;
+}
+.header {
+  height: 140px;
+  background-color: rgba(243, 243, 243, 0.5);
+  border-bottom: 1px solid #e2e1e1;
+}
+.content {
+  display: inline-block;
+  max-width: 1000px;
+  width: 100%;
+  -webkit-border-radius: 4px 4px 4px 4px;
+  -moz-border-radius: 4px 4px 4px 4px;
+  -ms-border-radius: 4px 4px 4px 4px;
+  -o-border-radius: 4px 4px 4px 4px;
+  border-radius: 4px 4px 4px 4px;
+  border: 1px solid #e2e1e1;
+  background-color: rgba(243, 243, 243, 0.5);
+  padding: 5px;
+}
+.spacer {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  margin-left: 10px;
+  margin-right: 10px;
+  height: 14px;
+  background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAABCAYAAACsXeyTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAFUlEQVQIHWNIS0sr/v//PwMMDzY+ADqMahlW4J91AAAAAElFTkSuQmCC") repeat-x scroll left top transparent;
+}
+.menu {
+  display: inline-block;
+}
+.menu ul {
+  width: 100%;
+  margin: 0px auto;
+  padding: 0px 40px 0px 50px;
+  font-size: 1.8em;
+  display: inline-block;
+}
+.menu ul li {
+  background-color: rgba(243, 243, 243, 0.5);
+  padding: 5px;
+  border-right: 1px solid #e2e1e1;
+  border-bottom: 1px solid #e2e1e1;
+  border-top: 1px solid #e2e1e1;
+  list-style-type: none;
+  float: left;
+  width: 33%;
+}
+.menu ul li:first-child {
+  -webkit-border-radius: 4px 0px 0px 4px;
+  -moz-border-radius: 4px 0px 0px 4px;
+  -ms-border-radius: 4px 0px 0px 4px;
+  -o-border-radius: 4px 0px 0px 4px;
+  border-radius: 4px 0px 0px 4px;
+  border-left: 1px solid #e2e1e1;
+}
+.menu ul li:last-child {
+  -webkit-border-radius: 0px 4px 4px 0px;
+  -moz-border-radius: 0px 4px 4px 0px;
+  -ms-border-radius: 0px 4px 4px 0px;
+  -o-border-radius: 0px 4px 4px 0px;
+  border-radius: 0px 4px 4px 0px;
+}
+form[name='login'] input[type='text'],
+form[name='login'] input[type='password'] {
+  padding: 0 10px;
+  width: 300px;
+  height: 40px;
+  color: #bbb;
+  border: 1px solid #e2e1e1;
+  -webkit-border-radius: 4px 4px 4px 4px;
+  -moz-border-radius: 4px 4px 4px 4px;
+  -ms-border-radius: 4px 4px 4px 4px;
+  -o-border-radius: 4px 4px 4px 4px;
+  border-radius: 4px 4px 4px 4px;
+  font-size: 1.2em;
+}
+form[name='login'] input[type='submit'] {
+  padding: 0 10px;
+  width: 100px;
+  height: 40px;
+  color: #666;
+  background-color: #ffffff;
+  border: 1px solid #e2e1e1;
+  -webkit-border-radius: 4px 4px 4px 4px;
+  -moz-border-radius: 4px 4px 4px 4px;
+  -ms-border-radius: 4px 4px 4px 4px;
+  -o-border-radius: 4px 4px 4px 4px;
+  border-radius: 4px 4px 4px 4px;
+  font-size: 0.9em;
+}
+@media handheld, only screen and (max-width: 767px) {
+  .footer {
+    font-size: 0.8em;
+  }
+}
