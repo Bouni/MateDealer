@@ -3,6 +3,7 @@
 import sys
 import os
 from datetime import datetime, timedelta
+from lock import Lock
 from flask import Flask, abort, render_template, send_file, jsonify,\
                   current_app, request, session, redirect, g, url_for
 from flask.ext.sqlalchemy import SQLAlchemy
@@ -31,43 +32,14 @@ app.config.from_object(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///matedealer.db'
 app.config['SECRET_KEY'] = os.urandom(24) 
 db = SQLAlchemy(app)
-pp = Principal(app)
 lm = LoginManager()
 lm.setup_app(app)
+principal = Principal(app)
+lock = Lock()
 
-admin_permission = Permission(RoleNeed('admin'))
-user_permission = Permission(RoleNeed('user'))
-
-##############################################################################
-# Lock Mechanism 
-##############################################################################
-
-class Lock():
-    
-    def __init__(self, locked=False, timeout=60*5):
-        self.locked = locked
-        self.locker = None
-        self.timestamp = datetime.now()
-        self.timeout = timeout
-
-    def lock(self, locker):
-        self.locker = locker
-        self.locked = True
-
-    def unlock(self):
-        self.locker =  None
-        self.locked = False
-
-    def get_locker(self):
-        return self.locker
-
-    def is_locked(self):
-        return self.locked
-    
-    def time_left(self):
-        delta = (self.timestamp + timedelta(0,self.timeout)) - datetime.now()
-        minutes, seconds = divmod(delta.seconds, 60) 
-        return "%d:%d" % (minutes, seconds)
+permission_admin = Permission(RoleNeed(u'admin'))
+permission_treasurer = Permission(RoleNeed(u'treasurer'))
+permission_user = Permission(RoleNeed(u'user'))
 
 ##############################################################################
 # Database Models 
@@ -177,26 +149,23 @@ def load_user(id):
 def on_identity_loaded(sender, identity):
     app.logger.debug('on_identity_loaded() called')
     identity.user = current_user
-    """
-    if hasattr(current_user, 'id'):
-        identity.provides.add(UserNeed(current_user.id))
-        print("2:",identity)
-    """
     if hasattr(current_user, 'roles'):
         for role in current_user.roles:
-            identity.provides.add(RoleNeed(role.role))
-    print(identity)
-
+            identity.provides.add(RoleNeed(unicode(role.role)))
 
 @app.before_request
 def before_request():
     g.user = current_user
     g.lock = lock
 
+# only defined to prevent needless filestsystem calls (and keep log clean)
+@app.route('/favicon.ico')
+def favicon():
+    abort(404)
+
 @app.route('/')
 def index():
     app.logger.debug('index() called')
-    print(g.identity)
     return render_template('index.html')
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -221,15 +190,20 @@ def login():
     return render_template('login.html', form=form)
 
 @app.route('/vending')
-#@login_required
-#@user_permission.require()
+@permission_user.require(401)
 def vending():
-    return "vending"
+    return render_template('vending.html')
+
+
+@app.route('/treasurer')
+@permission_treasurer.require(401)
+def treasurer():
+    return render_template('treasurer.html')
 
 @app.route('/admin')
-#@admin_permission.require()
+@permission_admin.require(401)
 def admin():
-    return "admin"
+    return  render_template('admin.html')
 
 @app.route('/logout')
 def logout():
@@ -247,13 +221,19 @@ def page_not_found(error):
     return render_template('404.html'), 404
 
 @app.errorhandler(401)
-def page_not_found(error):
-    app.logger.debug('page_not_found() called')
+def permission_denied(error):
+    app.logger.debug('permission_denied() called')
     return render_template('401.html'), 401
 
 ##############################################################################
 # Template filters
 ##############################################################################
+@app.template_filter('format_currency')
+def format_currency(value, format='EUR'):
+    if format == "EUR":
+        return u"%.2f €" % value
+    else:
+        return str(value)
 """
 @app.template_filter('dateformat')
 def dateformat(date, format='%d.%m.%Y'):
@@ -276,23 +256,12 @@ def utility_processor():
 # Helper functions
 ##############################################################################
 
-        
-
-def get_versions_info():
-    from flask import __version__ as FlaskVersion
-    versions =  'web.py Version:      %s\n' % __version__
-    versions += 'Flask Version:       %s\n' % FlaskVersion
-    return versions
-
 ##############################################################################
 # Main
 ##############################################################################
 
 if __name__ == '__main__':
-    lock = Lock()
     app.debug = DEBUG
     # Print version info
-    if DEBUG:
-        app.logger.debug(get_versions_info())
     app.logger.debug('App started')
     app.run(host='0.0.0.0')

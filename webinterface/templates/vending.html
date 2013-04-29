@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1 vending">
+                    <h2 >Getränkeausgabe</h2>
+                    <div class="balance">Dein guthaben beträgt  {{ g.user.balance|format_currency("EUR") }}  </div>
+                    <div class="spacer"></div> 
+                    <a style="font-size: 1.4em" href="{{ url_for('logout') }}">Logout</a>
+                </div>
+            </div>        
+		</div>
+{% endblock %}
