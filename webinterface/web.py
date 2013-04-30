@@ -5,7 +5,8 @@ import os
 from datetime import datetime, timedelta
 from lock import Lock
 from flask import Flask, abort, render_template, send_file, jsonify,\
-                  current_app, request, session, redirect, g, url_for
+                  current_app, request, session, redirect, g, url_for,\
+                  _request_ctx_stack
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager, current_user, login_required,\
                             login_user, logout_user,\
@@ -57,7 +58,7 @@ class User(db.Model):
     name = db.Column(db.String(64))
     email = db.Column(db.String(64))
     password = db.Column(db.String(64))
-    balance = db.Column(db.Float())
+    balance = db.Column(db.Integer())
     roles = db.relationship('Role', secondary=roles,
         backref=db.backref('users', lazy='dynamic'))
 
@@ -118,16 +119,18 @@ class Product(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(64))
+    price = db.Column(db.Integer())
     stock = db.Column(db.Integer())
     alert_level = db.Column(db.Integer())
 
-    def __init__(self, name, stock, alert_level):
+    def __init__(self, name, price, stock, alert_level):
         self.name = name
+        self.price = price
         self.stock = stock
         self.alert_level = alert_level
 
     def __repr__(self):
-        return "<Product ('%s','%s','%s')>" % (self.name, self.stock, self.alert_level)
+        return "<Product ('%s', '%s','%s','%s')>" % (self.name, self.price, self.stock, self.alert_level)
 
 ##############################################################################
 # Form Models 
@@ -175,12 +178,13 @@ def login():
         return redirect(url_for('logout'))
     form = LoginForm()
     if g.lock.is_locked():
-        return render_template('login.html', form=form)
+        if float(g.lock.time_left().replace(':','.')) > 0:
+            return render_template('login.html', form=form)
     if form.validate_on_submit():
         user = User.query.filter_by(name=form.user.data, password=form.password.data).first()
         if user is not None:
-            g.lock.lock(user.name)
-            login_user(user)
+            #g.lock.lock(user.name)
+            login_user(user) 
             identity_changed.send(current_app._get_current_object(),
                 identity=Identity(user.id))
             return redirect(url_for('index'))
@@ -203,11 +207,15 @@ def treasurer():
 @app.route('/admin')
 @permission_admin.require(401)
 def admin():
-    return  render_template('admin.html')
+    return render_template('admin.html', 
+        userdata=get_user_data(), 
+        roles=get_roles(),
+        products=get_products(),
+        transactions=get_transactions())
 
 @app.route('/logout')
 def logout():
-    g.lock.unlock()
+    #g.lock.unlock()
     logout_user()
     for key in ('identity.name', 'identity.auth_type'):
         session.pop(key, None)
@@ -234,6 +242,7 @@ def format_currency(value, format='EUR'):
         return u"%.2f €" % value
     else:
         return str(value)
+
 """
 @app.template_filter('dateformat')
 def dateformat(date, format='%d.%m.%Y'):
@@ -256,6 +265,17 @@ def utility_processor():
 # Helper functions
 ##############################################################################
 
+def get_user_data():
+    return User.query.all() 
+
+def get_roles():
+    return [role.role for role in Role.query.all()]
+
+def get_products():
+    return Product.query.all()
+
+def get_transactions():
+    return Transaction.query.all()
 ##############################################################################
 # Main
 ##############################################################################

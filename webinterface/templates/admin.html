@@ -2,9 +2,80 @@
 {% block body %}
         <div class="content">
             <div class="grid">
-                <div class="col-1-1">
-                    <h2 >Admin</h2>
-                    
+                <div class="col-1-1 admin">
+                    <h2 >Administration</h2>
+                    <fieldset>
+                    <legend>Benutzer</legend>
+                        <div class='user-dataset'>
+                            <div class='user-id'>ID</div>
+                            <div class='user-name'>Username</div>
+                            <div class='user-balance'>Guthaben</div>
+                            <div class='user-roles'>Rollen</div>
+                        </div>
+                    {% for user in userdata %}
+                        <div class='user-dataset'>
+                            <div class='user-id'>{{ user.id }}</div>
+                            <div style='display: inline-block;'><input type='text' class='username' value='{{ user.name }}'/></div>
+                            <div class='user-balance'>{{ user.balance|format_currency("EUR") }}</div>
+                            <div class='user-roles'>
+                            {% for role in roles %} 
+                            <div class="user-role"><input type="checkbox" value="{{ role }}" 
+                                {% for userrole in user.roles %}
+                                    {% if userrole.role == role %}checked{% endif %}
+                                {% endfor %}
+                            />{{ role }}
+                            </div>
+                            {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </fieldset>
+
+                    <fieldset>
+                    <legend>Produkte</legend>
+                        <div class='product-dataset'>
+                            <div class='product-id'>ID</div>
+                            <div class='product-name'>Getränk</div>
+                            <div class='product-price'>Preis [Cent]</div>
+                            <div class='product-stock'>Lagerbestand</div>
+                            <div class='product-alertlevel'>Alarmlevel</div>
+                        </div>
+                    {% for product in products %}
+                        <div class='product-dataset'>
+                            <div class='product-id'>{{ product.id }}</div>
+                            <div style='display: inline-block;'>
+                                <input type='text' class='productname' value='{{ product.name }}'/>
+                            </div>
+                            <div style='display: inline-block;'>
+                                <input type='text' class='productprice' value='{{ product.price }}'/>
+                            </div>
+                            <div style='display: inline-block;'>
+                                <input type='text' class='productstock' value='{{ product.stock }}'/>
+                            </div>
+                            <div style='display: inline-block;'>
+                                <input type='text' class='productalert' value='{{ product.alert_level }}'/>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </fieldset>
+
+                    <fieldset>
+                    <legend>Transaktionen</legend>
+                        <div class='transaction-dataset'>
+                            <div class='transaction-id'>ID</div>
+                            <div class='transaction-user'>Benutzer</div>
+                            <div class='transaction-product'>Produkt</div>
+                            <div class='transaction-date'>Zeitstempel</div>
+                        </div>
+                    {% for transaction in transactions %}
+                        <div class='transaction-dataset'>
+                            <div class='transaction-id'>{{ transaction.id }}</div>
+                            <div class='transaction-user'>{{ transaction.user.name }}</div>
+                            <div class='transaction-product'>{{ transaction.product.name }}</div>
+                            <div class='transaction-date'>{{ transaction.timestamp }}</div>
+                        </div>
+                    {% endfor %}
+                    </fieldset>
                     <div class="spacer"></div> 
                     <a style="font-size: 1.4em" href="{{ url_for('logout') }}">Logout</a>
                 </div>

@@ -24,5 +24,8 @@ class Lock():
     
     def time_left(self):
         delta = (self.timestamp + timedelta(0,self.timeout)) - datetime.now()
-        minutes, seconds = divmod(delta.seconds, 60) 
-        return "%d:%d" % (minutes, seconds)
+        minutes, seconds = divmod(delta.seconds, 60)
+        if minutes > 0 and seconds > 0: 
+            return "%d:%d" % (minutes, seconds)
+        else:
+            return "0:00"
