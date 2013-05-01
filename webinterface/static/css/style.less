@@ -137,7 +137,7 @@ a {
 input[type='text'],
 input[type='password'] {
     padding: 0 10px;
-    width: 300px;
+    width: 260px;
     height: 40px;
     color: @color-grey1;
     border: 1px solid @color-border;
@@ -196,20 +196,20 @@ input[type='button'] {
 
 .admin {
     fieldset {    
-        border: 1px solid @color-border;
+        border: 2px solid @color-border;
         .border-radius(4px, 4px, 4px, 4px);
         margin-bottom: 20px;
         legend {
             font-size: 1.2em;
         }
     }
-    .user-dataset {
-        text-align: left;
-        height: 45px;
-        margin-bottom: 10px;
-        .user-id {
-            display: inline-block;
-            vertical-align: top;
+    input {
+        font-size: 0.9em;
+    }
+    table {
+        width: 100%;
+        td {
+            border: 1px solid black;
             width: 50px;
             height: 40px;
             text-align: center;
@@ -219,135 +219,68 @@ input[type='button'] {
             .border-radius(4px, 4px, 4px, 4px);
             font-size: 1.2em;
         }
-        .user-name {
-            display: inline-block;
-            vertical-align: top;
-            width: 300px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
-            text-align: center;
-        }    
-        .user-balance {
-            display: inline-block;
-            vertical-align: top;
-            width: 125px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
+        td.user-id {
+            width: 6%;
         }
-        .user-roles {
-            display: inline-block;
-            height: 40px;
-            width: 400px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
-            .user-role {
-                width: 120px;
-                display: inline-block;
-                input[type="checkbox"] {
-                    vertical-align: middle;
-                }
+        td.user-name {
+            width: 36%;
+            padding: 0;
+            border: none;
+            input {
+                width: 100%;
             }
         }
-    }
-    .product-dataset {
-        text-align: left;
-        height: 45px;
-        margin-bottom: 10px;
-        .product-id {
-            display: inline-block;
-            vertical-align: top;
-            width: 50px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
+        td.user-balance {
+            width: 12%;
         }
-        .product-name {
-            display: inline-block;
-            vertical-align: top;
-            width: 300px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
-            text-align: center;
+        td.user-roles {
+            width: 36%;
+            span {
+                margin-right: 20px;
+            }
         }
-        .product-price,
-        .product-stock,
-        .product-alertlevel {
-            display: inline-block;
-            vertical-align: top;
-            width: 125px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
-            text-align: center;
+        /* Products */
+        td.product-id {
+            width: 6%;
         }
-        .productprice,
-        .productstock,
-        .productalert {
-            width: 125px;
-            text-align:center;
+        td.product-name {
+            width: 36%;
+            padding: 0;
+            border: none;
+            input {
+                width: 100%;
+            }
         }
-    }
-    .transaction-dataset {
-        text-align: left;
-        height: 45px;
-        margin-bottom: 10px;
-        .transaction-id {
-            display: inline-block;
-            vertical-align: top;
-            width: 50px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
+        td.product-slot,
+        td.product-price,
+        td.product-stock,
+        td.product-alert {
+            width: 12%;
+            padding: 0;
+            border: none;
+            input {
+                text-align: center;
+                width: 100%;
+            }
         }
-        .transaction-user,
-        .transaction-product,
-        .transaction-date {
-            display: inline-block;
-            vertical-align: top;
-            width: 280px;
-            height: 40px;
-            text-align: center;
-            padding: 0.25em  10px;
-            color: @color-grey1;
-            border: 1px solid @color-border;
-            .border-radius(4px, 4px, 4px, 4px);
-            font-size: 1.2em;
-            text-align: center;
+        /* Vends */
+        td.vend-id {
+            width: 6%;
+        }
+        td.vend-user {
+            width: 18%;
+        }
+        td.vend-product{
+            width: 18%;
+        }
+        td.vend-price {
+            width: 12%;
+        }
+        td.vend-timestamp {
+            width: 36%;
         }
     }
 }
-
 @media handheld, only screen and (max-width: 767px) {
     
     .footer {

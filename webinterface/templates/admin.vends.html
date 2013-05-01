@@ -1,0 +1,27 @@
+                    <fieldset>
+                    <legend>Verkäufe</legend>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Getränk</th>
+                            <th>Preis</th>
+                            <th>Zeitstempel</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        {% for vend in vends %}
+                        <tr>
+                            <td class="vend-id">{{ vend.id }}</td>
+                            <td class="vend-user">{{ vend.user }}</td>
+                            <td class="vend-product">{{ vend.product }}</td>
+                            <td class="vend-price">{{ vend.price }}</td>
+                            <td class="vend-timestamp">{{ vend.timestamp }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor%}
+                    </table>
+                    </fieldset>

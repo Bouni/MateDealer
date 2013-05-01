@@ -1,0 +1,50 @@
+                    <fieldset>
+                    <legend>Benutzer</legend>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Username</th>
+                            <th>Guthaben</th>
+                            <th>Rollen</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        {% for user in userdata %}
+                        {% if user.name != "root" %}
+                        <tr>
+                            <td class="user-id">{{ user.id }}</td>
+                            <td class="user-name"><input type='text' class='username' value='{{ user.name }}'/></td>
+                            <td class="user-balance">{{ user.balance|format_currency("EUR") }}</td>
+                            <td class="user-roles">
+                            {% for role in roles %}
+                            <input type="checkbox" value="{{ role }}" 
+                                {% for userrole in user.roles %}
+                                    {% if userrole.role == role %}checked{% endif %}
+                                {% endfor %}
+                            /><span>{{ role }}</span>
+                            {% endfor %}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endif %}
+                        {% endfor%}
+                        <tr>
+                            <td colspan="6" style="height: 10px;"></td>
+                        </tr>
+                        <tr>
+                            <td class="user-id"></td>
+                            <td class="user-name"><input type='text' class='username new' placeholder='Neuer Benutzer'/></td>
+                            <td class="user-balance">{{ 0|format_currency("EUR") }} </td>
+                            <td class="user-roles">
+                            {% for role in roles %}
+                            <input type="checkbox" value="{{ role }}" {% if role == "user" %}checked{% endif %}/><span>{{ role }}</span>
+                            {% endfor %}
+                            </td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    </fieldset>

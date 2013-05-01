@@ -96,7 +96,7 @@ a:hover {
 input[type='text'],
 input[type='password'] {
   padding: 0 10px;
-  width: 300px;
+  width: 260px;
   height: 40px;
   color: #666666;
   border: 1px solid #e2e1e1;
@@ -171,7 +171,7 @@ input[type='button'] {
   border-radius: 0px 4px 4px 0px;
 }
 .admin fieldset {
-  border: 1px solid #e2e1e1;
+  border: 2px solid #e2e1e1;
   -webkit-border-radius: 4px 4px 4px 4px;
   -moz-border-radius: 4px 4px 4px 4px;
   -ms-border-radius: 4px 4px 4px 4px;
@@ -182,14 +182,18 @@ input[type='button'] {
 .admin fieldset legend {
   font-size: 1.2em;
 }
-.admin .user-dataset {
-  text-align: left;
-  height: 45px;
-  margin-bottom: 10px;
+.admin input {
+  font-size: 0.9em;
 }
-.admin .user-dataset .user-id {
-  display: inline-block;
-  vertical-align: top;
+.admin table {
+  width: 100%;
+  /* Products */
+
+  /* Vends */
+
+}
+.admin table td {
+  border: 1px solid black;
   width: 50px;
   height: 40px;
   text-align: center;
@@ -203,159 +207,66 @@ input[type='button'] {
   border-radius: 4px 4px 4px 4px;
   font-size: 1.2em;
 }
-.admin .user-dataset .user-name {
-  display: inline-block;
-  vertical-align: top;
-  width: 300px;
-  height: 40px;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
+.admin table td.user-id {
+  width: 6%;
+}
+.admin table td.user-name {
+  width: 36%;
+  padding: 0;
+  border: none;
+}
+.admin table td.user-name input {
+  width: 100%;
+}
+.admin table td.user-balance {
+  width: 12%;
+}
+.admin table td.user-roles {
+  width: 36%;
+}
+.admin table td.user-roles span {
+  margin-right: 20px;
+}
+.admin table td.product-id {
+  width: 6%;
+}
+.admin table td.product-name {
+  width: 36%;
+  padding: 0;
+  border: none;
+}
+.admin table td.product-name input {
+  width: 100%;
+}
+.admin table td.product-slot,
+.admin table td.product-price,
+.admin table td.product-stock,
+.admin table td.product-alert {
+  width: 12%;
+  padding: 0;
+  border: none;
+}
+.admin table td.product-slot input,
+.admin table td.product-price input,
+.admin table td.product-stock input,
+.admin table td.product-alert input {
   text-align: center;
+  width: 100%;
 }
-.admin .user-dataset .user-balance {
-  display: inline-block;
-  vertical-align: top;
-  width: 125px;
-  height: 40px;
-  text-align: center;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
+.admin table td.vend-id {
+  width: 6%;
 }
-.admin .user-dataset .user-roles {
-  display: inline-block;
-  height: 40px;
-  width: 400px;
-  text-align: center;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
+.admin table td.vend-user {
+  width: 18%;
 }
-.admin .user-dataset .user-roles .user-role {
-  width: 120px;
-  display: inline-block;
+.admin table td.vend-product {
+  width: 18%;
 }
-.admin .user-dataset .user-roles .user-role input[type="checkbox"] {
-  vertical-align: middle;
+.admin table td.vend-price {
+  width: 12%;
 }
-.admin .product-dataset {
-  text-align: left;
-  height: 45px;
-  margin-bottom: 10px;
-}
-.admin .product-dataset .product-id {
-  display: inline-block;
-  vertical-align: top;
-  width: 50px;
-  height: 40px;
-  text-align: center;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
-}
-.admin .product-dataset .product-name {
-  display: inline-block;
-  vertical-align: top;
-  width: 300px;
-  height: 40px;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
-  text-align: center;
-}
-.admin .product-dataset .product-price,
-.admin .product-dataset .product-stock,
-.admin .product-dataset .product-alertlevel {
-  display: inline-block;
-  vertical-align: top;
-  width: 125px;
-  height: 40px;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
-  text-align: center;
-}
-.admin .product-dataset .productprice,
-.admin .product-dataset .productstock,
-.admin .product-dataset .productalert {
-  width: 125px;
-  text-align: center;
-}
-.admin .transaction-dataset {
-  text-align: left;
-  height: 45px;
-  margin-bottom: 10px;
-}
-.admin .transaction-dataset .transaction-id {
-  display: inline-block;
-  vertical-align: top;
-  width: 50px;
-  height: 40px;
-  text-align: center;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
-}
-.admin .transaction-dataset .transaction-user,
-.admin .transaction-dataset .transaction-product,
-.admin .transaction-dataset .transaction-date {
-  display: inline-block;
-  vertical-align: top;
-  width: 280px;
-  height: 40px;
-  padding: 0.25em  10px;
-  color: #666666;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
-  font-size: 1.2em;
-  text-align: center;
+.admin table td.vend-timestamp {
+  width: 36%;
 }
 @media handheld, only screen and (max-width: 767px) {
   .footer {

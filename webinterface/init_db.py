@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from web import User, Role, Transaction, Product
+from web import User, Role, Product, Vend, Payment 
 from web import db
 from datetime import datetime
 
@@ -19,18 +19,24 @@ def add_root():
     db.session.add(root)
     db.session.commit()
 
-def add_treasurer():
-    treasurer = User("treasurer", "treasurer@reaktor23.org", "password", 0, Role.query.filter((Role.role==u"treasurer") | (Role.role==u"user")).all())
-    db.session.add(treasurer)
+def add_users():
+    bouni = User("Bouni", "bouni@owee.de", "password", 1000, Role.query.filter(Role.role==u"user").all())
+    sannny = User("Samuel", "samuel@owee.de", "password", 1000, Role.query.filter(Role.role==u"user").all())
+    sniser = User("Sniser", "bouni@owee.de", "password", 1000, Role.query.filter(Role.role==u"user").all())
+    manuel = User("Manuel", "manuel@owee.de", "password", 1000, Role.query.filter(Role.role==u"user").all())
+    zeno = User("Zeno", "zeno@owee.de", "password", 1000, Role.query.filter(Role.role==u"user").all())
+    db.session.add_all([bouni,sannny,sniser,manuel,zeno])
     db.session.commit()
 
-def add_user():
-    user = User("sniser", "sniser@reaktor23.org", "password", 0, Role.query.filter((Role.role==u"user")).all())
-    db.session.add(user)
+def add_products():
+    mate = Product("Club Mate",100,1,23,10)
+    mate_cola = Product("Club Mate Cola",150,2,42,5)
+    db.session.add_all([mate,mate_cola])
     db.session.commit()
 
 add_roles()
 
 add_root()
-add_treasurer()
-add_user()
+add_users()
+
+add_products()

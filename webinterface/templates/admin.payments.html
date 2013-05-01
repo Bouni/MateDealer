@@ -1,0 +1,27 @@
+                    <fieldset>
+                    <legend>Einzahlungen</legend>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Kassier</th>
+                            <th>Username</th>
+                            <th>Betrag</th>
+                            <th>Zeitstempel</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        {% for payment in payments %}
+                        <tr>
+                            <td class="payment-id">{{ payment.id }}</td>
+                            <td class="payment-treasurer">{{ payment.trasurer }}</td>
+                            <td class="payment-user">{{ payment.user }}</td>
+                            <td class="payment-price">{{ payment.price }}</td>
+                            <td class="payment-timestamp">{{ payment.timestamp }}</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor%}
+                    </table>
+                    </fieldset>

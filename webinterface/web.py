@@ -96,41 +96,59 @@ class Role(db.Model):
     def __repr__(self):
         return "<Role ('%s')>" % self.role
     
-
-class Transaction(db.Model):
-
-    id = db.Column(db.Integer, primary_key=True)    
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    user = db.relationship('User', backref=db.backref('users', lazy='dynamic'))
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
-    product = db.relationship('Product', backref=db.backref('products', lazy='dynamic'))
-    timestamp = db.Column(db.DateTime()) 
-
-    def __init__(self, user, product, timestamp):
-        self.user = user
-        self.product = product
-        self.timestamp = timestamp
-
-    def __repr__(self):
-        return "<Transaction ('%s','%s','%s')>" % (self.user, self.product, self.timestamp)
-
-
 class Product(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)    
     name = db.Column(db.String(64))
     price = db.Column(db.Integer())
+    slot = db.Column(db.Integer())
     stock = db.Column(db.Integer())
     alert_level = db.Column(db.Integer())
 
-    def __init__(self, name, price, stock, alert_level):
+    def __init__(self, name, price, slot, stock, alert_level):
         self.name = name
         self.price = price
+        self.slot = slot
         self.stock = stock
         self.alert_level = alert_level
 
     def __repr__(self):
-        return "<Product ('%s', '%s','%s','%s')>" % (self.name, self.price, self.stock, self.alert_level)
+        return "<Product ('%s',price='%s',slot='%s',stock='%s',alert='%s')>" % (self.name, self.price, self.slot, self.stock, self.alert_level)
+
+class Vend(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)    
+    user =  db.Column(db.String(64))
+    product = db.Column(db.String(64))
+    price = db.Column(db.Integer())
+    timestamp = db.Column(db.DateTime()) 
+
+    def __init__(self, user, product, price, timestamp):
+        self.user = user
+        self.product = product
+        self.price = price
+        self.timestamp = timestamp
+
+    def __repr__(self):
+        return "<Vend ('%s','%s','%s','%s')>" % (self.user, self.product, self.price, self.timestamp)
+
+class Payment(db.Model):
+
+    id = db.Column(db.Integer, primary_key=True)    
+    treasurer = db.Column(db.String(64))
+    user = db.Column(db.String(64))
+    amount = db.Column(db.Integer()) 
+    timestamp = db.Column(db.DateTime()) 
+
+    def __init__(self, treasurer, user, amount, timestamp):
+        self.treasurer = treasurer
+        self.user = user
+        self.amount = amount
+        self.timestamp = timestamp
+
+    def __repr__(self):
+        return "<Payment ('%s','%s','%s','%s')>" % (self.treasurer, self.user, self.amount, self.timestamp)
+
 
 ##############################################################################
 # Form Models 
@@ -211,7 +229,8 @@ def admin():
         userdata=get_user_data(), 
         roles=get_roles(),
         products=get_products(),
-        transactions=get_transactions())
+        vends=get_vends(),
+        payments=get_payments())
 
 @app.route('/logout')
 def logout():
@@ -239,7 +258,7 @@ def permission_denied(error):
 @app.template_filter('format_currency')
 def format_currency(value, format='EUR'):
     if format == "EUR":
-        return u"%.2f €" % value
+        return u"%.2f" % (value / 100)
     else:
         return str(value)
 
@@ -264,6 +283,8 @@ def utility_processor():
 #############################################################################r
 # Helper functions
 ##############################################################################
+def get_chart_data():
+    return Vend.query.order_by(product).all()
 
 def get_user_data():
     return User.query.all() 
@@ -274,8 +295,12 @@ def get_roles():
 def get_products():
     return Product.query.all()
 
-def get_transactions():
-    return Transaction.query.all()
+def get_vends():
+    return Vend.query.all()
+
+def get_payments():
+    return Payment.query.all()
+
 ##############################################################################
 # Main
 ##############################################################################

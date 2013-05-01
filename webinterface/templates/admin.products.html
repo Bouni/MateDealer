@@ -1,0 +1,42 @@
+                    <fieldset>
+                    <legend>Produkte</legend>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produkt</th>
+                            <th>Preis in €</th>
+                            <th>Schacht</th>
+                            <th>Bestand</th>
+                            <th>Grenzwert</th>
+                            <th></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        {% for product in products %}
+                        <tr>
+                            <td class="product-id">{{ product.id }}</td>
+                            <td class="product-name"><input type='text' value='{{ product.name }}'/></td>
+                            <td class="product-price"><input type='text' value='{{ product.price|format_currency("EUR") }}'/></td>
+                            <td class="product-slot"><input type='text' value='{{ product.slot }}'/></td>
+                            <td class="product-stock"><input type='text' value='{{ product.stock }}'/></td>
+                            <td class="product-alert"><input type='text' value='{{ product.alert_level }}'/></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor%}
+                        <tr>
+                            <td colspan="8" style="height: 10px;"></td>
+                        </tr>
+                        <tr>
+                            <td class="product-id"></td>
+                            <td class="product-name"><input type='text' placeholder='Produkt'/></td>
+                            <td class="product-price"><input type='text' placeholder='1.00'/></td>
+                            <td class="product-slot"><input type='text' placeholder='1'/></td>
+                            <td class="product-stock"><input type='text' placeholder='23'/></td>
+                            <td class="product-alert"><input type='text' placeholder='10'/></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                    </fieldset>
