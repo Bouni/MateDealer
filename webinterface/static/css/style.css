@@ -30,6 +30,7 @@ h3 {
 a {
   text-decoration: none;
   color: #666666;
+  cursor: pointer;
 }
 a:hover {
   cursor: pointer;
@@ -107,9 +108,11 @@ input[type='password'] {
   border-radius: 4px 4px 4px 4px;
   font-size: 1.2em;
 }
-input[type='submit'] {
+input[type='submit'],
+input[type='button'] {
+  cursor: pointer;
+  width: 150px;
   padding: 0 10px;
-  width: 100px;
   height: 40px;
   color: #666;
   background-color: #ffffff;
@@ -121,19 +124,31 @@ input[type='submit'] {
   border-radius: 4px 4px 4px 4px;
   font-size: 0.9em;
 }
-input[type='button'] {
+.button {
   padding: 0 10px;
-  width: 150px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   color: #666;
   background-color: #ffffff;
-  border: 1px solid #e2e1e1;
-  -webkit-border-radius: 4px 4px 4px 4px;
-  -moz-border-radius: 4px 4px 4px 4px;
-  -ms-border-radius: 4px 4px 4px 4px;
-  -o-border-radius: 4px 4px 4px 4px;
-  border-radius: 4px 4px 4px 4px;
   font-size: 0.9em;
+}
+.button.edit {
+  background: url("../img/edit.png") no-repeat scroll center center transparent;
+  background-size: 24px;
+}
+.button.delete {
+  background: url("../img/delete.png") no-repeat scroll center center transparent;
+  background-size: 24px;
+}
+.edit-checkboxes {
+  margin: 0;
+  padding: 0;
+}
+.edit-checkboxes li {
+  width: 33%;
+  list-style-type: none;
+  float: left;
+  font-size: 0.8em;
 }
 .menu {
   display: inline-block;
@@ -171,7 +186,7 @@ input[type='button'] {
   border-radius: 0px 4px 4px 0px;
 }
 .admin fieldset {
-  border: 2px solid #e2e1e1;
+  border: 1px dashed #a6a5a5;
   -webkit-border-radius: 4px 4px 4px 4px;
   -moz-border-radius: 4px 4px 4px 4px;
   -ms-border-radius: 4px 4px 4px 4px;
@@ -180,17 +195,11 @@ input[type='button'] {
   margin-bottom: 20px;
 }
 .admin fieldset legend {
+  padding: 10px;
   font-size: 1.2em;
-}
-.admin input {
-  font-size: 0.9em;
 }
 .admin table {
   width: 100%;
-  /* Products */
-
-  /* Vends */
-
 }
 .admin table td {
   border: 1px solid black;
@@ -207,66 +216,34 @@ input[type='button'] {
   border-radius: 4px 4px 4px 4px;
   font-size: 1.2em;
 }
-.admin table td.user-id {
-  width: 6%;
-}
-.admin table td.user-name {
-  width: 36%;
-  padding: 0;
-  border: none;
-}
-.admin table td.user-name input {
-  width: 100%;
-}
-.admin table td.user-balance {
-  width: 12%;
-}
-.admin table td.user-roles {
-  width: 36%;
-}
-.admin table td.user-roles span {
-  margin-right: 20px;
-}
-.admin table td.product-id {
-  width: 6%;
-}
-.admin table td.product-name {
-  width: 36%;
-  padding: 0;
-  border: none;
-}
-.admin table td.product-name input {
-  width: 100%;
-}
-.admin table td.product-slot,
-.admin table td.product-price,
-.admin table td.product-stock,
-.admin table td.product-alert {
-  width: 12%;
-  padding: 0;
-  border: none;
-}
-.admin table td.product-slot input,
-.admin table td.product-price input,
-.admin table td.product-stock input,
-.admin table td.product-alert input {
-  text-align: center;
-  width: 100%;
-}
+.admin table td.user-id,
+.admin table td.product-id,
 .admin table td.vend-id {
   width: 6%;
 }
-.admin table td.vend-user {
-  width: 18%;
+.admin table td.user-name,
+.admin table td.user-email {
+  width: 25%;
 }
+.admin table td.product-name,
+.admin table td.vend-timestamp {
+  width: 30%%;
+}
+.admin table td.user-balance,
+.admin table td.product-slot,
+.admin table td.product-price,
+.admin table td.product-stock,
+.admin table td.product-alert,
+.admin table td.vend-price {
+  width: 15%;
+}
+.admin table td.vend-user,
 .admin table td.vend-product {
   width: 18%;
 }
-.admin table td.vend-price {
-  width: 12%;
-}
-.admin table td.vend-timestamp {
-  width: 36%;
+.admin table td.user-roles {
+  font-size: 0.8em;
+  width: 25%;
 }
 @media handheld, only screen and (max-width: 767px) {
   .footer {

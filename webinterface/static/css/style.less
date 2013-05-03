@@ -13,6 +13,7 @@
 @color-grey2: rgba(243, 243, 243, 0.5);
 @color-red1: rgba(206, 0, 5, 1);
 @color-border: rgba(226, 225, 225, 1);
+@color-border-dark: rgba(166, 165, 165, 1);
 
 //###########################################################
 //# Fonts
@@ -79,8 +80,9 @@ h3 {
 a {
     text-decoration: none;
     color: @color-grey1;
-    &:hover { 
     cursor: pointer;
+    &:hover { 
+        cursor: pointer;
     }
 }
 
@@ -144,9 +146,11 @@ input[type='password'] {
     .border-radius(4px, 4px, 4px, 4px);
     font-size: 1.2em;
 }
-input[type='submit'] {
+input[type='submit'],
+input[type='button'] {
+    cursor: pointer;
+    width: 150px;
     padding: 0 10px;
-    width: 100px;
     height: 40px;
     color: #666; 
     background-color: rgb(255, 255, 255);
@@ -155,15 +159,32 @@ input[type='submit'] {
     font-size: 0.9em;
 }
 
-input[type='button'] {
+.button {
     padding: 0 10px;
-    width: 150px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     color: #666; 
     background-color: rgb(255, 255, 255);
-    border: 1px solid @color-border;
-    .border-radius(4px, 4px, 4px, 4px);
     font-size: 0.9em;
+}
+.button.edit {
+    background: url("../img/edit.png") no-repeat scroll center center transparent;
+    background-size: 24px;
+}
+.button.delete {
+    background: url("../img/delete.png") no-repeat scroll center center transparent;
+    background-size: 24px;
+}
+
+.edit-checkboxes {
+    margin: 0;
+    padding: 0;
+    li {
+        width: 33%;
+        list-style-type: none;
+        float: left;
+        font-size: 0.8em;
+    }
 }
 
 .menu {
@@ -196,15 +217,13 @@ input[type='button'] {
 
 .admin {
     fieldset {    
-        border: 2px solid @color-border;
+        border: 1px dashed @color-border-dark;
         .border-radius(4px, 4px, 4px, 4px);
         margin-bottom: 20px;
         legend {
+            padding: 10px;
             font-size: 1.2em;
         }
-    }
-    input {
-        font-size: 0.9em;
     }
     table {
         width: 100%;
@@ -219,65 +238,34 @@ input[type='button'] {
             .border-radius(4px, 4px, 4px, 4px);
             font-size: 1.2em;
         }
-        td.user-id {
-            width: 6%;
-        }
-        td.user-name {
-            width: 36%;
-            padding: 0;
-            border: none;
-            input {
-                width: 100%;
-            }
-        }
-        td.user-balance {
-            width: 12%;
-        }
-        td.user-roles {
-            width: 36%;
-            span {
-                margin-right: 20px;
-            }
-        }
-        /* Products */
-        td.product-id {
-            width: 6%;
-        }
-        td.product-name {
-            width: 36%;
-            padding: 0;
-            border: none;
-            input {
-                width: 100%;
-            }
-        }
-        td.product-slot,
-        td.product-price,
-        td.product-stock,
-        td.product-alert {
-            width: 12%;
-            padding: 0;
-            border: none;
-            input {
-                text-align: center;
-                width: 100%;
-            }
-        }
-        /* Vends */
+        td.user-id,
+        td.product-id,
         td.vend-id {
             width: 6%;
         }
-        td.vend-user {
-            width: 18%;
+        td.user-name,
+        td.user-email {
+            width: 25%;
         }
-        td.vend-product{
-            width: 18%;
-        }
-        td.vend-price {
-            width: 12%;
-        }
+        td.product-name,
         td.vend-timestamp {
-            width: 36%;
+            width: 30%%;
+        }
+        td.user-balance,
+        td.product-slot,
+        td.product-price,
+        td.product-stock,
+        td.product-alert,
+        td.vend-price {
+            width: 15%;
+        }
+        td.vend-user,
+        td.vend-product {
+            width: 18%;
+        }
+        td.user-roles{
+            font-size: 0.8em;
+            width: 25%
         }
     }
 }

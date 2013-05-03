@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1 admin">
+                    <fieldset>
+                    <legend>Neues Produkt anlegen</legend>
+                    <form action="" method="post" name="add_product">
+                    {{ form.hidden_tag() }}
+                    <table>
+                        <tr>
+                            <td>Produktname</td>
+                            <td>
+                            {{ form.name }}
+                            {% for error in form.errors.name %}
+                            <div style="color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Preis pro Stk. in Cent</td>
+                            <td>
+                            {{ form.price }}
+                            {% for error in form.errors.roles %}
+                            <div style="color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Schacht Nr.</td>
+                            <td>
+                            {{ form.slot }}
+                            {% for error in form.errors.slot %}
+                            <div style="color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>           
+                        </tr>                 
+                        <tr>
+                            <td>Lagerbestand</td>
+                            <td>
+                            {{ form.stock }}
+                            {% for error in form.errors.stock %}
+                            <div style="color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Alarmpegel</td>                            
+                            <td>
+                            {{ form.alert_level }}
+                            {% for error in form.errors.alert_level %}
+                            <div style="color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="submit" class="button save" value="Speichern">
+                                <a href="{{ url_for('admin') }}"><input type="button" class="button cancel" value="Abbrechen"></a>
+                            </td>
+                        </tr>
+                    </table>
+                    </fieldset>
+                    </form>
+                </div>
+            </div>        
+		</div>
+{% endblock %}
+

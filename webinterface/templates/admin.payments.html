@@ -8,10 +8,9 @@
                             <th>Username</th>
                             <th>Betrag</th>
                             <th>Zeitstempel</th>
-                            <th></th>
-                            <th></th>
                         </tr>
                         </thead>
+                        {% if payments%}
                         {% for payment in payments %}
                         <tr>
                             <td class="payment-id">{{ payment.id }}</td>
@@ -19,9 +18,12 @@
                             <td class="payment-user">{{ payment.user }}</td>
                             <td class="payment-price">{{ payment.price }}</td>
                             <td class="payment-timestamp">{{ payment.timestamp }}</td>
-                            <td></td>
-                            <td></td>
                         </tr>
                         {% endfor%}
+                        {% else %}
+                        <tr>
+                            <td colspan='7'>Es wurde bisher noch nichts eingezahlt.</td>
+                        </tr>
+                        {% endif %}
                     </table>
                     </fieldset>

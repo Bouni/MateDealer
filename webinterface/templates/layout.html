@@ -18,6 +18,12 @@
         <!---- Header ---->
         <div class="header">
             <h1>MateDealer</h1>
+            <div class="spacer"></div> 
+            {% if not g.user.is_authenticated() %}
+                <a style="font-size: 1.4em" href="{{ url_for('login') }}">Login</a>
+            {% else %}
+                <a style="font-size: 1.4em" href="{{ url_for('logout') }}">Logout</a>
+            {% endif %}
         </div>
         <div class="grid">
             <div class="col-1-1 menu">

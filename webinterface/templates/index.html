@@ -24,13 +24,6 @@
                     <div class="flot-graph">
                         <div id="placeholder" class="flot-placeholder"></div>
                     </div> 
-                    <div class="spacer"></div> 
-
-                    {% if not g.user.is_authenticated() %}
-                        <a style="font-size: 1.4em" href="{{ url_for('login') }}">Login</a>
-                    {% else %}
-                        <a style="font-size: 1.4em" href="{{ url_for('logout') }}">Logout</a>
-                    {% endif %}
                 </div>
             </div>        
 		</div>

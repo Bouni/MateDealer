@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1 admin">
+                    <fieldset>
+                    <legend>Benutzer bearbeiten</legend>
+                    <form action="" method="post" name="edit_user">
+                    {{ form.hidden_tag() }}
+                    {{ form.id }} 
+                    <table>
+                        <tr>
+                            <td>Username</td>
+                            <td>
+                            {{ form.user }}
+                            {% for error in form.errors.user %}
+                            <div style="display: block; color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>E-Mail</td>
+                            <td>
+                            {{ form.email }}
+                            {% for error in form.errors.email %}
+                            <div style="display: block; color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Berechtigungen</td>
+                            <td>
+                            {{ form.roles(class_='edit-checkboxes') }}
+                            {% for error in form.errors.roles %}
+                            <div style="display: block; color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="submit" class="button save" value="Speichern">
+                                <a href="{{ url_for('admin') }}"><input type="button" class="button cancel" value="Abbrechen"></a>
+                            </td>
+                        </tr>
+                    </table>
+                    </fieldset>
+                    </form>
+                </div>
+            </div>        
+		</div>
+{% endblock %}
+

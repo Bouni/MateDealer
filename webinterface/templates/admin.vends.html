@@ -5,13 +5,12 @@
                         <tr>
                             <th>ID</th>
                             <th>Username</th>
-                            <th>Getränk</th>
+                            <th>Produkt</th>
                             <th>Preis</th>
                             <th>Zeitstempel</th>
-                            <th></th>
-                            <th></th>
                         </tr>
                         </thead>
+                        {% if vends %}
                         {% for vend in vends %}
                         <tr>
                             <td class="vend-id">{{ vend.id }}</td>
@@ -19,9 +18,12 @@
                             <td class="vend-product">{{ vend.product }}</td>
                             <td class="vend-price">{{ vend.price }}</td>
                             <td class="vend-timestamp">{{ vend.timestamp }}</td>
-                            <td></td>
-                            <td></td>
                         </tr>
                         {% endfor%}
+                        {% else %}
+                        <tr>
+                            <td colspan='7'>Es wurde bisher noch kein Gertänk ausgegeben.</td>
+                        </tr>
+                        {% endif %}
                     </table>
                     </fieldset>

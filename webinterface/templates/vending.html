@@ -6,8 +6,6 @@
                     <h2 >Getränkeausgabe</h2>
                     <div class="balance">Dein Guthaben beträgt {{ g.user.balance|format_currency("EUR") }}</div>
                     <input type='button' value='Getränk kaufen'>
-                    <div class="spacer"></div> 
-                    <a style="font-size: 1.4em" href="{{ url_for('logout') }}">Logout</a>
                 </div>
             </div>        
 		</div>

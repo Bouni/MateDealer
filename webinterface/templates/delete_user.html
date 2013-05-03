@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+{% block body %}
+        <div class="content">
+            <div class="grid">
+                <div class="col-1-1 admin">
+                    <fieldset>
+                    <legend>Benutzer löschen</legend>
+                    <form action="" method="post" name="delete_user">
+                    {{ form.hidden_tag() }}
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Benutzer wirklich löschen?</th>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td>{{ user }}</td>
+                        <tr>
+                            <td>
+                                {{ form.submit(class_='button save') }} 
+                                <a href="{{ url_for('admin') }}"><input type="button" class="button cancel" value="Abbrechen"></a>
+                            </td>
+                        </tr>
+                    </table>
+                    </fieldset>
+                    </form>
+                </div>
+            </div>        
+		</div>
+{% endblock %}
+

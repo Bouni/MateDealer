@@ -11,8 +11,9 @@ from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.login import LoginManager, current_user, login_required,\
                             login_user, logout_user,\
                             confirm_login, fresh_login_required
-from flask.ext.wtf import Form, TextField, BooleanField, PasswordField,\
-                            validators
+from flask.ext.wtf import Form, widgets, TextField, BooleanField, PasswordField,\
+                            HiddenInput, IntegerField, SelectMultipleField,\
+                            SubmitField, DecimalField, validators
 from flask.ext.principal import Principal, Permission, Identity, \
                                 AnonymousIdentity, identity_changed,\
                                 identity_loaded, RoleNeed
@@ -31,7 +32,7 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///matedealer.db'
-app.config['SECRET_KEY'] = os.urandom(24) 
+app.config['SECRET_KEY'] = "thats-my-secret" 
 db = SQLAlchemy(app)
 lm = LoginManager()
 lm.setup_app(app)
@@ -154,9 +155,41 @@ class Payment(db.Model):
 # Form Models 
 ##############################################################################
 
+class HiddenInteger(IntegerField):
+    widget = HiddenInput()
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = widgets.ListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
+
 class LoginForm(Form):
     user = TextField('user', validators = [validators.Required()])
     password = PasswordField('password', validators = [validators.Required()])
+
+class AddUserForm(Form):
+    user = TextField('user', validators = [validators.Required(), validators.Length(min=3, max=64)])
+    email = TextField('email', validators = [validators.Required(), validators.Email()])
+    password = PasswordField('password', validators = [validators.Required(), validators.Length(min=3, max=64), validators.EqualTo('confirm','Both passwords must be equal.')])
+    confirm = PasswordField('confirm')
+    roles = MultiCheckboxField('roles', validators = [validators.Required()], coerce=int)
+ 
+class EditUserForm(Form):
+    id = HiddenInteger('id')
+    user = TextField('user', validators = [validators.Required(), validators.Length(min=3, max=64)])
+    email = TextField('email', validators = [validators.Required(), validators.Email()])
+    roles = MultiCheckboxField('roles', validators = [validators.Required()], coerce=int)
+ 
+class DeleteForm(Form):
+    id = HiddenInteger('id')
+    submit = SubmitField(u'Löschen')
+ 
+class ProductForm(Form):
+    name = TextField('name', validators = [validators.Required(), validators.Length(min=3, max=64)])
+    price = IntegerField('price', validators = [validators.Required()])
+    slot = IntegerField('slot', validators = [validators.Required(), validators.NumberRange(min=1,max=5)])
+    stock = IntegerField('stock', validators = [validators.Required()])
+    alert_level = IntegerField('alert_level', validators = [validators.Required()])
+     
 
 ##############################################################################
 # Routes
@@ -166,32 +199,34 @@ class LoginForm(Form):
 def load_user(id):
     return User.query.get(int(id))
 
+
 @identity_loaded.connect_via(app)
 def on_identity_loaded(sender, identity):
-    app.logger.debug('on_identity_loaded() called')
     identity.user = current_user
     if hasattr(current_user, 'roles'):
         for role in current_user.roles:
             identity.provides.add(RoleNeed(unicode(role.role)))
+
 
 @app.before_request
 def before_request():
     g.user = current_user
     g.lock = lock
 
+
 # only defined to prevent needless filestsystem calls (and keep log clean)
 @app.route('/favicon.ico')
 def favicon():
     abort(404)
 
+
 @app.route('/')
 def index():
-    app.logger.debug('index() called')
     return render_template('index.html')
+
 
 @app.route('/login', methods = ['GET', 'POST'])
 def login():
-    app.logger.debug('login() called')
     if g.user is not None and g.user.is_authenticated():
         return redirect(url_for('logout'))
     form = LoginForm()
@@ -211,6 +246,7 @@ def login():
             return render_template('login.html', form=form)
     return render_template('login.html', form=form)
 
+
 @app.route('/vending')
 @permission_user.require(401)
 def vending():
@@ -222,6 +258,7 @@ def vending():
 def treasurer():
     return render_template('treasurer.html')
 
+
 @app.route('/admin')
 @permission_admin.require(401)
 def admin():
@@ -231,6 +268,103 @@ def admin():
         products=get_products(),
         vends=get_vends(),
         payments=get_payments())
+
+
+@app.route('/add/user', methods=['GET','POST'])
+@permission_admin.require(401)
+def add_user():
+    form = AddUserForm()
+    form.roles.choices = [(id, role.capitalize()) for id, role in Role.query.with_entities(Role.id,Role.role).all()]
+    form.roles.default = [role.id for role in Role.query.filter_by(role="user").all()]
+    if form.validate_on_submit():
+        new = User(form.user.data, form.email.data, form.password.data, 0.0, [Role.query.get(id) for id in form.roles.data])
+        db.session.add(new)
+        db.session.commit()
+        return redirect(url_for('admin'))
+    if not form.is_submitted():
+        form.process() 
+    return render_template('add_user.html', form=form) 
+
+
+@app.route('/edit/user/<int:id>', methods=['GET','POST'])
+@permission_admin.require(401)
+def edit_user(id):
+    user = User.query.get(id)
+    form = EditUserForm()
+    form.roles.choices = [(id, role.capitalize()) for id, role in Role.query.with_entities(Role.id,Role.role).all()]
+    form.roles.default = [role.id for role in user.roles]
+    if form.validate_on_submit():
+        user.name = form.user.data
+        user.email = form.email.data
+        user.roles = [Role.query.get(id) for id in form.roles.data]
+        db.session.commit()
+        return redirect(url_for('admin'))
+    if not form.is_submitted():
+        form.process() 
+        form.id.data = user.id
+        form.user.data = user.name
+        form.email.data = user.email
+    return render_template('edit_user.html', form=form) 
+
+
+@app.route('/delete/user/<int:id>', methods=['GET','POST'])
+@permission_admin.require(401)
+def delete_user(id):
+    user = User.query.get(id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(user)
+        db.session.commit()
+        return redirect(url_for('admin'))
+    return render_template('delete_user.html', user=user.name, form=form) 
+
+
+@app.route('/add/product', methods=['GET','POST'])
+@permission_admin.require(401)
+def add_product():
+    form = ProductForm()
+    if form.validate_on_submit():
+        new = Product(form.name.data, form.price.data, form.slot.data, form.stock.data, form.alert_level.data)
+        db.session.add(new)
+        db.session.commit()
+        return redirect(url_for('admin'))
+    return render_template('add_product.html', form=form) 
+
+
+
+@app.route('/edit/product/<int:id>', methods=['GET','POST'])
+@permission_admin.require(401)
+def edit_product(id):
+    product = Product.query.get(id)
+    form = ProductForm()
+    if form.validate_on_submit():
+        product.name = form.name.data
+        product.price = form.price.data
+        product.slot = form.slot.data
+        product.stock = form.stock.data
+        product.alert_level = form.alert_level.data
+        db.session.commit()
+        return redirect(url_for('admin'))
+    if not form.is_submitted():
+        form.name.data = product.name
+        form.price.data = product.price
+        form.slot.data = product.slot
+        form.stock.data = product.stock
+        form.alert_level.data = product.alert_level
+    return render_template('add_product.html', form=form) 
+
+
+@app.route('/delete/product/<int:id>', methods=['GET','POST'])
+@permission_admin.require(401)
+def delete_product(id):
+    product = Product.query.get(id)
+    form = DeleteForm()
+    if form.validate_on_submit():
+        db.session.delete(product)
+        db.session.commit()
+        return redirect(url_for('admin'))
+    return render_template('delete_product.html', product=product.name, form=form) 
+
 
 @app.route('/logout')
 def logout():
@@ -242,15 +376,21 @@ def logout():
                           identity=AnonymousIdentity())
     return redirect(url_for('index'))
 
+
+@app.errorhandler(405)
+def page_not_found(error):
+    return render_template('405.html'), 405
+
+
 @app.errorhandler(404)
 def page_not_found(error):
-    app.logger.debug('page_not_found() called')
     return render_template('404.html'), 404
+
 
 @app.errorhandler(401)
 def permission_denied(error):
-    app.logger.debug('permission_denied() called')
     return render_template('401.html'), 401
+
 
 ##############################################################################
 # Template filters
@@ -290,7 +430,7 @@ def get_user_data():
     return User.query.all() 
 
 def get_roles():
-    return [role.role for role in Role.query.all()]
+    return [role.role.capitalize() for role in Role.query.all()]
 
 def get_products():
     return Product.query.all()
