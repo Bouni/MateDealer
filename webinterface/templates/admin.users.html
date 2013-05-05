@@ -6,7 +6,7 @@
                             <th>ID</th>
                             <th>Username</th>
                             <th>E-Mail</th>
-                            <th>Guthaben</th>
+                            <th>Guthaben in €</th>
                             <th>Rollen</th>
                             <th></th>
                             <th></th>
@@ -17,7 +17,7 @@
                             <td class="user-id">{{ user.id }}</td>
                             <td class="user-name">{{ user.name }}</td>
                             <td class="user-name">{{ user.email }}</td>
-                            <td class="user-balance">{{ user.balance|format_currency("EUR") }}</td>
+                            <td class="user-balance">{{ user.balance|cent_to_eur }}</td>
                             <td class="user-roles">
                             {% for role in roles %}
                             <input type="checkbox" value="{{ role }}" disabled 

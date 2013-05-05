@@ -2,8 +2,56 @@
 {% block body %}
         <div class="content">
             <div class="grid">
-                <div class="col-1-1">
+                <div class="col-1-1 treasurer">
                     <h2 >Kassenwart</h2>
+                    <fieldset>
+                    <legend>Konto aufladen</legend>
+                    <form action="" method="post" name="edit_user">
+                    {{ form.hidden_tag() }}
+                    <table>
+                        <tr>
+                            <td>Username</td>
+                            <td>
+                            {{ form.user }}
+                            {% for error in form.errors.user %}
+                            <div style="display: block; color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Betrag in €</td>
+                            <td>
+                            {{ form.amount }}
+                            {% for error in form.errors.amount %}
+                            <div style="display: block; color: red;">{{error}}</div>
+                            {% endfor %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2">
+                                <input type="submit" class="button save" value="Einzahlen">
+                                <a href="{{ url_for('treasurer') }}"><input type="button" class="button cancel" value="Abbrechen"></a>
+                            </td>
+                        </tr>
+                    </table> 
+                    </fieldset>
+                    <fieldset>
+                    <legend>Kontostände</legend>
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Guthaben</th>
+                        </tr>
+                        </thead>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.balance|cent_to_eur }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table> 
+                    </fieldset>
                 </div>
             </div>        
 		</div>

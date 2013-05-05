@@ -13,7 +13,7 @@ from flask.ext.login import LoginManager, current_user, login_required,\
                             confirm_login, fresh_login_required
 from flask.ext.wtf import Form, widgets, TextField, BooleanField, PasswordField,\
                             HiddenInput, IntegerField, SelectMultipleField,\
-                            SubmitField, DecimalField, validators
+                            SubmitField, DecimalField, SelectField, validators
 from flask.ext.principal import Principal, Permission, Identity, \
                                 AnonymousIdentity, identity_changed,\
                                 identity_loaded, RoleNeed
@@ -185,11 +185,14 @@ class DeleteForm(Form):
  
 class ProductForm(Form):
     name = TextField('name', validators = [validators.Required(), validators.Length(min=3, max=64)])
-    price = IntegerField('price', validators = [validators.Required()])
+    price = DecimalField('price', validators = [validators.NumberRange(min=0.1,max=100.0)])
     slot = IntegerField('slot', validators = [validators.Required(), validators.NumberRange(min=1,max=5)])
     stock = IntegerField('stock', validators = [validators.Required()])
     alert_level = IntegerField('alert_level', validators = [validators.Required()])
      
+class TreasurerForm(Form):
+    user = SelectField('user', coerce=int)     
+    amount = IntegerField('amount', validators = [validators.NumberRange(min=-500,max=500)])
 
 ##############################################################################
 # Routes
@@ -253,10 +256,20 @@ def vending():
     return render_template('vending.html')
 
 
-@app.route('/treasurer')
+@app.route('/treasurer', methods=['GET','POST'])
 @permission_treasurer.require(401)
 def treasurer():
-    return render_template('treasurer.html')
+    users = User.query.filter(User.name != "root").all() 
+    form = TreasurerForm()
+    form.user.choices = [(user.id,user.name) for user in users]
+    if form.validate_on_submit():
+        user = User.query.get(form.user.data)
+        user.balance += int(float(form.amount.data) * 100)
+        payment = Payment(g.user.name, user.name, int(float(form.amount.data) * 100), datetime.now())   
+        db.session.add(payment)
+        db.session.commit()
+        return render_template('treasurer.html',form=form, users=users)
+    return render_template('treasurer.html',form=form, users=users)
 
 
 @app.route('/admin')
@@ -324,12 +337,14 @@ def delete_user(id):
 def add_product():
     form = ProductForm()
     if form.validate_on_submit():
-        new = Product(form.name.data, form.price.data, form.slot.data, form.stock.data, form.alert_level.data)
+        price = int(float(form.price.data) * 100)
+        app.logger.debug(price)
+        new = Product(form.name.data, price, form.slot.data, form.stock.data, form.alert_level.data)
+        app.logger.debug(new)
         db.session.add(new)
         db.session.commit()
         return redirect(url_for('admin'))
     return render_template('add_product.html', form=form) 
-
 
 
 @app.route('/edit/product/<int:id>', methods=['GET','POST'])
@@ -395,12 +410,9 @@ def permission_denied(error):
 ##############################################################################
 # Template filters
 ##############################################################################
-@app.template_filter('format_currency')
-def format_currency(value, format='EUR'):
-    if format == "EUR":
-        return u"%.2f" % (value / 100)
-    else:
-        return str(value)
+@app.template_filter('cent_to_eur')
+def cent_to_eur(value):
+    return "%.2f" % (float(value) / 100)
 
 """
 @app.template_filter('dateformat')
@@ -427,7 +439,7 @@ def get_chart_data():
     return Vend.query.order_by(product).all()
 
 def get_user_data():
-    return User.query.all() 
+    return User.query.filter(User.name != "root").all() 
 
 def get_roles():
     return [role.role.capitalize() for role in Role.query.all()]

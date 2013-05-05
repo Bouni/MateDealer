@@ -6,7 +6,7 @@
                             <th>ID</th>
                             <th>Kassier</th>
                             <th>Username</th>
-                            <th>Betrag</th>
+                            <th>Betrag in €</th>
                             <th>Zeitstempel</th>
                         </tr>
                         </thead>
@@ -14,9 +14,9 @@
                         {% for payment in payments %}
                         <tr>
                             <td class="payment-id">{{ payment.id }}</td>
-                            <td class="payment-treasurer">{{ payment.trasurer }}</td>
+                            <td class="payment-treasurer">{{ payment.treasurer }}</td>
                             <td class="payment-user">{{ payment.user }}</td>
-                            <td class="payment-price">{{ payment.price }}</td>
+                            <td class="payment-price">{{ payment.amount|cent_to_eur }}</td>
                             <td class="payment-timestamp">{{ payment.timestamp }}</td>
                         </tr>
                         {% endfor%}

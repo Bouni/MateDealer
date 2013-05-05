@@ -18,10 +18,10 @@
                             </td>
                         </tr>
                         <tr>
-                            <td>Preis pro Stk. in Cent</td>
+                            <td>Preis pro Stk. in €</td>
                             <td>
                             {{ form.price }}
-                            {% for error in form.errors.roles %}
+                            {% for error in form.errors.price %}
                             <div style="color: red;">{{error}}</div>
                             {% endfor %}
                             </td>

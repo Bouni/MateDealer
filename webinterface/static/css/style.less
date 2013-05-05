@@ -187,6 +187,18 @@ input[type='button'] {
     }
 }
 
+select {
+    cursor: pointer;
+    width: 260px;
+    padding: 0 10px;
+    height: 40px;
+    color: #666; 
+    background-color: rgb(255, 255, 255);
+    border: 1px solid @color-border;
+    .border-radius(4px, 4px, 4px, 4px);
+    font-size: 0.9em;
+}
+
 .menu {
     display: inline-block;
     ul {
@@ -215,7 +227,8 @@ input[type='button'] {
     }
 }
 
-.admin {
+.admin,
+.treasurer {
     fieldset {    
         border: 1px dashed @color-border-dark;
         .border-radius(4px, 4px, 4px, 4px);

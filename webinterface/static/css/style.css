@@ -150,6 +150,21 @@ input[type='button'] {
   float: left;
   font-size: 0.8em;
 }
+select {
+  cursor: pointer;
+  width: 260px;
+  padding: 0 10px;
+  height: 40px;
+  color: #666;
+  background-color: #ffffff;
+  border: 1px solid #e2e1e1;
+  -webkit-border-radius: 4px 4px 4px 4px;
+  -moz-border-radius: 4px 4px 4px 4px;
+  -ms-border-radius: 4px 4px 4px 4px;
+  -o-border-radius: 4px 4px 4px 4px;
+  border-radius: 4px 4px 4px 4px;
+  font-size: 0.9em;
+}
 .menu {
   display: inline-block;
 }
@@ -185,7 +200,8 @@ input[type='button'] {
   -o-border-radius: 0px 4px 4px 0px;
   border-radius: 0px 4px 4px 0px;
 }
-.admin fieldset {
+.admin fieldset,
+.treasurer fieldset {
   border: 1px dashed #a6a5a5;
   -webkit-border-radius: 4px 4px 4px 4px;
   -moz-border-radius: 4px 4px 4px 4px;
@@ -194,14 +210,17 @@ input[type='button'] {
   border-radius: 4px 4px 4px 4px;
   margin-bottom: 20px;
 }
-.admin fieldset legend {
+.admin fieldset legend,
+.treasurer fieldset legend {
   padding: 10px;
   font-size: 1.2em;
 }
-.admin table {
+.admin table,
+.treasurer table {
   width: 100%;
 }
-.admin table td {
+.admin table td,
+.treasurer table td {
   border: 1px solid black;
   width: 50px;
   height: 40px;
@@ -217,31 +236,47 @@ input[type='button'] {
   font-size: 1.2em;
 }
 .admin table td.user-id,
+.treasurer table td.user-id,
 .admin table td.product-id,
-.admin table td.vend-id {
+.treasurer table td.product-id,
+.admin table td.vend-id,
+.treasurer table td.vend-id {
   width: 6%;
 }
 .admin table td.user-name,
-.admin table td.user-email {
+.treasurer table td.user-name,
+.admin table td.user-email,
+.treasurer table td.user-email {
   width: 25%;
 }
 .admin table td.product-name,
-.admin table td.vend-timestamp {
+.treasurer table td.product-name,
+.admin table td.vend-timestamp,
+.treasurer table td.vend-timestamp {
   width: 30%%;
 }
 .admin table td.user-balance,
+.treasurer table td.user-balance,
 .admin table td.product-slot,
+.treasurer table td.product-slot,
 .admin table td.product-price,
+.treasurer table td.product-price,
 .admin table td.product-stock,
+.treasurer table td.product-stock,
 .admin table td.product-alert,
-.admin table td.vend-price {
+.treasurer table td.product-alert,
+.admin table td.vend-price,
+.treasurer table td.vend-price {
   width: 15%;
 }
 .admin table td.vend-user,
-.admin table td.vend-product {
+.treasurer table td.vend-user,
+.admin table td.vend-product,
+.treasurer table td.vend-product {
   width: 18%;
 }
-.admin table td.user-roles {
+.admin table td.user-roles,
+.treasurer table td.user-roles {
   font-size: 0.8em;
   width: 25%;
 }

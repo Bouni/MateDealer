@@ -4,7 +4,7 @@
             <div class="grid">
                 <div class="col-1-1 vending">
                     <h2 >Getränkeausgabe</h2>
-                    <div class="balance">Dein Guthaben beträgt {{ g.user.balance|format_currency("EUR") }}</div>
+                    <div class="balance">Dein Guthaben beträgt {{ g.user.balance|cent_to_eur }}</div>
                     <input type='button' value='Getränk kaufen'>
                 </div>
             </div>        

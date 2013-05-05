@@ -17,7 +17,7 @@
                         <tr>
                             <td class="product-id">{{ product.id }}</td>
                             <td class="product-name">{{ product.name }}</td>
-                            <td class="product-price">{{ product.price|format_currency("EUR") }}</td>
+                            <td class="product-price">{{ product.price|cent_to_eur }}</td>
                             <td class="product-slot">{{ product.slot }}</td>
                             <td class="product-stock">{{ product.stock }}</td>
                             <td class="product-alert">{{ product.alert_level }}</td>

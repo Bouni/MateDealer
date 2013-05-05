@@ -6,7 +6,7 @@
                             <th>ID</th>
                             <th>Username</th>
                             <th>Produkt</th>
-                            <th>Preis</th>
+                            <th>Preis in €</th>
                             <th>Zeitstempel</th>
                         </tr>
                         </thead>
@@ -16,7 +16,7 @@
                             <td class="vend-id">{{ vend.id }}</td>
                             <td class="vend-user">{{ vend.user }}</td>
                             <td class="vend-product">{{ vend.product }}</td>
-                            <td class="vend-price">{{ vend.price }}</td>
+                            <td class="vend-price">{{ vend.price|cent_to_eur }}</td>
                             <td class="vend-timestamp">{{ vend.timestamp }}</td>
                         </tr>
                         {% endfor%}
