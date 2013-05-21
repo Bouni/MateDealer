@@ -17,6 +17,7 @@ from flask.ext.wtf import Form, widgets, TextField, BooleanField, PasswordField,
 from flask.ext.principal import Principal, Permission, Identity, \
                                 AnonymousIdentity, identity_changed,\
                                 identity_loaded, RoleNeed
+from matedealer import *
 
 __version__ = 0.1
 
@@ -25,7 +26,7 @@ __version__ = 0.1
 # Settings
 ##############################################################################
 
-DEBUG = True
+DEBUG = False#True
 
 ##############################################################################
 
@@ -38,6 +39,7 @@ lm = LoginManager()
 lm.setup_app(app)
 principal = Principal(app)
 lock = Lock()
+
 
 permission_admin = Permission(RoleNeed(u'admin'))
 permission_treasurer = Permission(RoleNeed(u'treasurer'))
@@ -86,6 +88,7 @@ class User(db.Model):
     def __repr__(self):
         return "<User ('%s','%s','%s')>" % (self.name, self.email, self.balance)
 
+
 class Role(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)    
@@ -96,6 +99,7 @@ class Role(db.Model):
 
     def __repr__(self):
         return "<Role ('%s')>" % self.role
+
     
 class Product(db.Model):
 
@@ -150,6 +154,8 @@ class Payment(db.Model):
     def __repr__(self):
         return "<Payment ('%s','%s','%s','%s')>" % (self.treasurer, self.user, self.amount, self.timestamp)
 
+
+sc = SessionController(db, User, Product, Vend)
 
 ##############################################################################
 # Form Models 
@@ -255,6 +261,24 @@ def login():
 def vending():
     return render_template('vending.html')
 
+@app.route('/status')
+@permission_user.require(401)
+def status():
+    print("USER: %s" % sc.user.name)
+    return jsonify({"locked" : sc.is_locked(), "user" : sc.user.name })
+
+@app.route('/vend/start')
+@permission_user.require(401)
+def vend():
+    sc.vend_start(g.user.id)
+    return jsonify({"vend" : True})
+
+@app.route('/vend/cancel')
+@permission_user.require(401)
+def vend():
+    sc.cancel()
+    return jsonify({"cancel" : True})
+
 
 @app.route('/treasurer', methods=['GET','POST'])
 @permission_treasurer.require(401)
@@ -338,9 +362,7 @@ def add_product():
     form = ProductForm()
     if form.validate_on_submit():
         price = int(float(form.price.data) * 100)
-        app.logger.debug(price)
         new = Product(form.name.data, price, form.slot.data, form.stock.data, form.alert_level.data)
-        app.logger.debug(new)
         db.session.add(new)
         db.session.commit()
         return redirect(url_for('admin'))

@@ -4,8 +4,57 @@
             <div class="grid">
                 <div class="col-1-1 vending">
                     <h2 >Getränkeausgabe</h2>
+                    <script lang="javascript">
+                    
+                    $(document).ready(function(){
+                        get_status();
+                        $("#vend_button").click(function(){
+                            get_status();
+                            if($("#vend_button").is(':visible')) {
+                                $.ajax({
+                                    url: "/vend",
+                                    data: "",
+                                    success: function(ret) {
+                                        get_status();
+                                    }
+                                });
+                            }
+                        }); 
+                        $("#cancel_button").click(function(){
+                            get_status();
+                            if($("#cancel_button").is(':visible')) {
+                                $.ajax({
+                                    url: "/cancel",
+                                    data: "",
+                                    success: function(ret) {
+                                        get_status();
+                                    }
+                                });
+                            }
+                        }); 
+                    });
+                    function get_status() {
+                        $.ajax({
+                            url: "/status",
+                            data: "",
+                            success: function(ret) {
+                               if(ret.locked == true){
+                                $("#vend_button").hide();
+                                $("#cancel_button").show();
+                                $("#locked_msg").html("Der MateDealer ist momentan von " + ret.user + " belegt!"); 
+                               } else {
+                                $("#cancel_button").hide();
+                                $("#vend_button").show(); 
+                                $("#locked_msg").html(""); 
+                               }
+                            }
+                        });
+                    }
+                    </script>
                     <div class="balance">Dein Guthaben beträgt {{ g.user.balance|cent_to_eur }}</div>
-                    <input type='button' value='Getränk kaufen'>
+                    <input type='button' id="vend_button" value='Getränk kaufen'>
+                    <input type='button' id="cancel_button" value='Abbrechen'>
+                    <div id="locked_msg"><div>
                 </div>
             </div>        
 		</div>

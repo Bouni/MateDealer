@@ -114,7 +114,7 @@ input[type='button'] {
   width: 150px;
   padding: 0 10px;
   height: 40px;
-  color: #666;
+  color: #CCC;
   background-color: #ffffff;
   border: 1px solid #e2e1e1;
   -webkit-border-radius: 4px 4px 4px 4px;
@@ -164,6 +164,9 @@ select {
   -o-border-radius: 4px 4px 4px 4px;
   border-radius: 4px 4px 4px 4px;
   font-size: 0.9em;
+}
+#vend_button {
+  display: none;
 }
 .menu {
   display: inline-block;
