@@ -15,6 +15,7 @@ class SessionController:
         self.product = product
         self.vend = vend
         self.user = user
+        self.active_user = ""
         self.md = MateDealer(self)
         self.md.start()
         self.user_id = None
@@ -26,6 +27,7 @@ class SessionController:
         self.user_id = user_id
         self.lock()
         user = self.user.query.get(self.user_id)
+        self.active_user = user.name 
         self.md.start_session(user.balance)
 
     def vend_request(self, item):
@@ -58,6 +60,7 @@ class SessionController:
         if self.timer != None:
             self.timer.stop()
             self.timer = None
+        self.active_user = ""
         self.unlock()
         self.md.cancel_session()
 

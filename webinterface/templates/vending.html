@@ -12,7 +12,7 @@
                             get_status();
                             if($("#vend_button").is(':visible')) {
                                 $.ajax({
-                                    url: "/vend",
+                                    url: "/vend/start",
                                     data: "",
                                     success: function(ret) {
                                         get_status();
@@ -24,7 +24,7 @@
                             get_status();
                             if($("#cancel_button").is(':visible')) {
                                 $.ajax({
-                                    url: "/cancel",
+                                    url: "/vend/cancel",
                                     data: "",
                                     success: function(ret) {
                                         get_status();
@@ -38,14 +38,19 @@
                             url: "/status",
                             data: "",
                             success: function(ret) {
-                               if(ret.locked == true){
-                                $("#vend_button").hide();
-                                $("#cancel_button").show();
-                                $("#locked_msg").html("Der MateDealer ist momentan von " + ret.user + " belegt!"); 
+                                if(ret.locked == true){
+                                    $("#vend_button").hide();
+                                    if(ret.active_user == ret.current_user) {
+                                        $("#cancel_button").show();
+                                        $("#locked_msg").html(""); 
+                                    } else {
+                                        $("#cancel_button").hide();
+                                        $("#locked_msg").html("Der MateDealer ist momentan von " + ret.active_user + " belegt!"); 
+                                    }
                                } else {
                                 $("#cancel_button").hide();
-                                $("#vend_button").show(); 
                                 $("#locked_msg").html(""); 
+                                $("#vend_button").show(); 
                                }
                             }
                         });

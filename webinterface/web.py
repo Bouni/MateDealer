@@ -3,7 +3,6 @@
 import sys
 import os
 from datetime import datetime, timedelta
-from lock import Lock
 from flask import Flask, abort, render_template, send_file, jsonify,\
                   current_app, request, session, redirect, g, url_for,\
                   _request_ctx_stack
@@ -38,7 +37,6 @@ db = SQLAlchemy(app)
 lm = LoginManager()
 lm.setup_app(app)
 principal = Principal(app)
-lock = Lock()
 
 
 permission_admin = Permission(RoleNeed(u'admin'))
@@ -220,7 +218,6 @@ def on_identity_loaded(sender, identity):
 @app.before_request
 def before_request():
     g.user = current_user
-    g.lock = lock
 
 
 # only defined to prevent needless filestsystem calls (and keep log clean)
@@ -231,7 +228,7 @@ def favicon():
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', products=plot_vends())
 
 
 @app.route('/login', methods = ['GET', 'POST'])
@@ -239,13 +236,9 @@ def login():
     if g.user is not None and g.user.is_authenticated():
         return redirect(url_for('logout'))
     form = LoginForm()
-    if g.lock.is_locked():
-        if float(g.lock.time_left().replace(':','.')) > 0:
-            return render_template('login.html', form=form)
     if form.validate_on_submit():
         user = User.query.filter_by(name=form.user.data, password=form.password.data).first()
         if user is not None:
-            #g.lock.lock(user.name)
             login_user(user) 
             identity_changed.send(current_app._get_current_object(),
                 identity=Identity(user.id))
@@ -264,20 +257,21 @@ def vending():
 @app.route('/status')
 @permission_user.require(401)
 def status():
-    print("USER: %s" % sc.user.name)
-    return jsonify({"locked" : sc.is_locked(), "user" : sc.user.name })
+    return jsonify({"locked" : sc.is_locked(), "active_user" : sc.active_user, "current_user": g.user.name })
 
 @app.route('/vend/start')
 @permission_user.require(401)
-def vend():
+def vend_start():
     sc.vend_start(g.user.id)
     return jsonify({"vend" : True})
 
 @app.route('/vend/cancel')
 @permission_user.require(401)
-def vend():
-    sc.cancel()
-    return jsonify({"cancel" : True})
+def vend_cancel():
+    if sc.active_user == g.user.name: 
+        sc.cancel()
+        return jsonify({"cancel" : True})
+    print(sc.active_user, g.user.name)
 
 
 @app.route('/treasurer', methods=['GET','POST'])
@@ -457,6 +451,9 @@ def utility_processor():
 #############################################################################r
 # Helper functions
 ##############################################################################
+def plot_vends():
+    return jsonify([[product, timestamp] for product, timestamp in Vend.query.with_entities(Vend.product, Vend.timestamp).all()])
+
 def get_chart_data():
     return Vend.query.order_by(product).all()
 

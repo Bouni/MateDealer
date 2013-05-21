@@ -7,14 +7,10 @@
 
                     <script type="text/javascript">
                     $(function() {
-                        var d6 = [];
-                        for (var i = 0; i < 14; i += 0.5 + Math.random()) {
-                            d6.push([i, Math.sqrt(2*i + Math.sin(i) + 5)]);
-                        }
-
+                        mate = JSON.parse({{products}});
                         $.plot("#placeholder", [
                         {
-                            data: d1,
+                            data: mate,
                             label: "test",
                             lines: { show: true, fill: true }
                         }]
