@@ -28,7 +28,7 @@ cmdStruct_t CMD_LIST[] = {
     {"reset",cmd_reset},
     {"help",cmd_help},
 	{"info",cmd_info},
-    {"get-mdb-state",cmd_get_mdb_state},
+    {"mdb-state",cmd_get_mdb_state},
     {"start-session",cmd_start_session},
     {"approve-vend",cmd_approve_vend},
     {"deny-vend",cmd_deny_vend},
@@ -129,7 +129,7 @@ void cmd_help(char *arg) {
     send_str_p(UPLINK_USART, PSTR("-----------------------------------------------\r\n"));
     send_str_p(UPLINK_USART, PSTR("reset:\r\n   reset the Arduino\r\n"));
     send_str_p(UPLINK_USART, PSTR("info:\r\n   shows the VMC infos transfered during the setup process\r\n"));
-    send_str_p(UPLINK_USART, PSTR("get-mdb-state:\r\n   displays the current MDB state.\r\n"));
+    send_str_p(UPLINK_USART, PSTR("mdb-state:\r\n   displays the current MDB state.\r\n"));
     send_str_p(UPLINK_USART, PSTR("start-session <funds>:\r\n   starts a session with <funds> Euro Cents.\r\n"));
     send_str_p(UPLINK_USART, PSTR("approve-vend <vend-amount>:\r\n   approves a vend request with <vend-amount> Euro Cents.\r\n"));
     send_str_p(UPLINK_USART, PSTR("deny-vend:\r\n   denies a vend request.\r\n"));
@@ -164,25 +164,25 @@ void cmd_get_mdb_state(char *arg) {
     
     switch(mdb_state) {
         case MDB_INACTIVE:
-            send_str_p(UPLINK_USART,PSTR("INACTIVE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: INACTIVE\r\n"));  
         break;
         case MDB_DISABLED:
-            send_str_p(UPLINK_USART,PSTR("DISABLED\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: DISABLED\r\n"));  
         break;
         case MDB_ENABLED:
-            send_str_p(UPLINK_USART,PSTR("ENABLED\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: ENABLED\r\n"));  
         break;
         case MDB_SESSION_IDLE:
-            send_str_p(UPLINK_USART,PSTR("SESSION IDLE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: SESSION IDLE\r\n"));  
         break;
         case MDB_VENDING:
-            send_str_p(UPLINK_USART,PSTR("VEND\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: VEND\r\n"));  
         break;
         case MDB_REVALUE:
-            send_str_p(UPLINK_USART,PSTR("REVALUE\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: REVALUE\r\n"));  
         break;
         case MDB_NEGATIVE_VEND:
-            send_str_p(UPLINK_USART,PSTR("NEGATIVE VEND\r\n"));  
+            send_str_p(UPLINK_USART,PSTR("State: NEGATIVE VEND\r\n"));  
         break;
     }
     
