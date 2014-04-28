@@ -28,4 +28,4 @@ For bugs, contributions, suggestions, or anything else send an E-Mail to:
 
 ## Links
 
-[MDB / ICP Specification](http://www.vending.org/technology/MDB_Version_4-2.pdf)
+[MDB / ICP Specification](http://www.vending.org/images/pdfs/technology/mdb_version_4-2.pdf)
