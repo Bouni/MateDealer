@@ -30,6 +30,8 @@ uint8_t mdb_active_cmd = MDB_IDLE;
 
 uint8_t reset_done = FALSE;
 
+char debug_buffer[24];
+
 extern volatile uint8_t cmd_var[MAX_VAR];
 
 vmcCfg_t vmc = {0,0,0,0};
@@ -94,34 +96,50 @@ void mdb_cmd_handler(void) {
 void mdb_reset(void) {
     
     // Wait for enough data in buffer to proceed reset
-	if(buffer_level(MDB_USART,RX) < 2) return; 
+    if(buffer_level(MDB_USART,RX) < 2) return; 
 
     #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("RESET\r\n"));
     #endif
+   
+    uint16_t checksum = recv_mdb(MDB_USART);
+
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+    itoa(checksum, debug_buffer, 16);
+    send_str(UPLINK_USART, debug_buffer);
+    #endif
     
     // validate checksum
-	if(recv_mdb(MDB_USART) != MDB_RESET) {
-		mdb_active_cmd = MDB_IDLE;
-		mdb_poll_reply = MDB_REPLY_ACK;
+    if(checksum != MDB_RESET) {
+        mdb_active_cmd = MDB_IDLE;
+        mdb_poll_reply = MDB_REPLY_ACK;
         send_str_p(UPLINK_USART,PSTR("Error: invalid checksum for [RESET]\r\n"));
-		return;
-	}
+        return;
+    }
 
-	// Reset everything
-	vmc.feature_level = 0;
-	vmc.dispaly_cols = 0;
-	vmc.dispaly_rows = 0;
-	vmc.dispaly_info = 0;
-	price.max = 0;
-	price.min = 0;
+    // Reset everything
+    vmc.feature_level = 0;
+    vmc.dispaly_cols = 0;
+    vmc.dispaly_rows = 0;
+    vmc.dispaly_info = 0;
+    price.max = 0;
+    price.min = 0;
 
     // Send ACK
     send_mdb(MDB_USART, 0x100);
+    
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+    itoa(0x100, debug_buffer, 16);
+    send_str(UPLINK_USART, debug_buffer);
+    send_str_p(UPLINK_USART, PSTR("\r\n"));
+    #endif
+    
     reset_done = TRUE;
     mdb_state = MDB_INACTIVE;
     mdb_active_cmd = MDB_IDLE;
-	mdb_poll_reply = MDB_REPLY_JUST_RESET;
+        mdb_poll_reply = MDB_REPLY_JUST_RESET;
 }
 
 void mdb_setup(void) {
@@ -132,77 +150,129 @@ void mdb_setup(void) {
     uint8_t index = 0;
     
     if(state < 2) {
-    	// Wait for enough data in buffer
-		if(buffer_level(MDB_USART,RX) < 12) return; 
-		
+        // Wait for enough data in buffer
+        if(buffer_level(MDB_USART,RX) < 12) return; 
+                
         // fetch the data from buffer
-		for(index = 0; index < 6; index++) {
+        for(index = 0; index < 6; index++) {
             data[index] = (uint8_t) recv_mdb(MDB_USART);
         }
-		
-		// calculate checksum
-		checksum += data[0] + data[1] + data[2] + data[3] + data[4];
+        
+        #if DEBUG == 1
+        send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+        for(index = 0; index < 6; index++) {
+            itoa(data[index], debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR(";"));
+        }
+        send_str_p(UPLINK_USART, PSTR("\r\n"));
+        #endif
+                
+        // calculate checksum
+        checksum += data[0] + data[1] + data[2] + data[3] + data[4];
         checksum = checksum & 0xFF;
         
         // validate checksum
-		if(checksum != data[5]) {
+        if(checksum != data[5]) {
             state = 0;
-			mdb_active_cmd = MDB_IDLE;
-			mdb_poll_reply = MDB_REPLY_ACK;
-			checksum = MDB_SETUP;
-            send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [SETUP]\r\n"));
-			return;  
-		}
-		state = data[0];
-	}	
-
-	// Switch setup state
-	switch(state) {
-		
-        // Stage 1 - config Data
-		case 0:
-            
-            #if DEBUG == 1
-            send_str_p(UPLINK_USART, PSTR("SETUP STAGE 1\r\n"));
-            #endif
-            
-			// store VMC configuration data
-            vmc.feature_level = data[1];
-            vmc.dispaly_cols  = data[2];
-            vmc.dispaly_rows  = data[3];
-            vmc.dispaly_info  = data[4];
-            
-            // calculate checksum for own configuration
-            checksum = ((cd.reader_cfg + 
-                         cd.feature_level +
-                        (cd.country_code >> 8) +
-                        (cd.country_code & 0xFF) +
-                         cd.scale_factor +
-                         cd.decimal_places +
-                         cd.max_resp_time +
-                         cd.misc_options) & 0xFF) | 0x100;
-
-            // Send own config data
-            send_mdb(MDB_USART, cd.reader_cfg);
-            send_mdb(MDB_USART, cd.feature_level);
-            send_mdb(MDB_USART, (cd.country_code >> 8));
-            send_mdb(MDB_USART, (cd.country_code & 0xFF));
-            send_mdb(MDB_USART, cd.scale_factor);
-            send_mdb(MDB_USART, cd.decimal_places);
-            send_mdb(MDB_USART, cd.max_resp_time);
-            send_mdb(MDB_USART, cd.misc_options);
-            send_mdb(MDB_USART, checksum);
-            
-            state = 2;
-            
-            // reset checksum for next stage
+            mdb_active_cmd = MDB_IDLE;
+            mdb_poll_reply = MDB_REPLY_ACK;
             checksum = MDB_SETUP;
-            return;
+            send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [SETUP]\r\n"));
+            return;  
+        }
+        state = data[0];
+    }       
+
+    // Switch setup state
+    switch(state) {
+                
+        // Stage 1 - config Data
+        case 0:
             
-		break;
+        #if DEBUG == 1
+        send_str_p(UPLINK_USART, PSTR("SETUP STAGE 1\r\n"));
+        #endif
+        
+                    // store VMC configuration data
+        vmc.feature_level = data[1];
+        vmc.dispaly_cols  = data[2];
+        vmc.dispaly_rows  = data[3];
+        vmc.dispaly_info  = data[4];
+        
+        // calculate checksum for own configuration
+        checksum = ((cd.reader_cfg + 
+                     cd.feature_level +
+                    (cd.country_code >> 8) +
+                    (cd.country_code & 0xFF) +
+                     cd.scale_factor +
+                     cd.decimal_places +
+                     cd.max_resp_time +
+                     cd.misc_options) & 0xFF) | 0x100;
+
+        // Send own config data
+        send_mdb(MDB_USART, cd.reader_cfg);
+        send_mdb(MDB_USART, cd.feature_level);
+        send_mdb(MDB_USART, (cd.country_code >> 8));
+        send_mdb(MDB_USART, (cd.country_code & 0xFF));
+        send_mdb(MDB_USART, cd.scale_factor);
+        send_mdb(MDB_USART, cd.decimal_places);
+        send_mdb(MDB_USART, cd.max_resp_time);
+        send_mdb(MDB_USART, cd.misc_options);
+        send_mdb(MDB_USART, checksum);
+        
+        #if DEBUG == 1
+        send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+
+        itoa(cd.reader_cfg, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+        
+        itoa(cd.feature_level, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa((cd.country_code >> 8)), debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa((cd.country_code & 0xFF), debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa(cd.scale_factor, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa(cd.decimal_places, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa(cd.max_resp_time, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa(cd.misc_options, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        itoa(checksum, debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+
+        send_str_p(UPLINK_USART, PSTR("\r\n"));
+        #endif
+        
+        state = 2;
+        
+        // reset checksum for next stage
+        checksum = MDB_SETUP;
+        return;
+            
+       break;
 
         // Stage 2 - price data
-		case 1:
+        case 1:
         
             #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("SETUP STAGE 2\r\n"));
@@ -212,8 +282,15 @@ void mdb_setup(void) {
             price.max = (data[1] << 8) | data[2];
             price.min = (data[3] << 8) | data[4];
 
-	        // send ACK
-	        send_mdb(MDB_USART, 0x100);
+            // send ACK
+            send_mdb(MDB_USART, 0x100);
+
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+            itoa(0x100, debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
 
             // Set MDB State
             mdb_state = MDB_DISABLED;
@@ -224,10 +301,11 @@ void mdb_setup(void) {
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             return;
-		break;
+        break;
 
         // ACK from VMC for MateDealer cfg data
-		case 2:
+        case 2:
+            
             // Wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return; 
             
@@ -235,8 +313,15 @@ void mdb_setup(void) {
             send_str_p(UPLINK_USART, PSTR("SETUP WAIT FOR ACK\r\n"));
             #endif
             
-			// Check if VMC sent ACK
-			data[0] = recv_mdb(MDB_USART);
+            // Check if VMC sent ACK
+            data[0] = recv_mdb(MDB_USART);
+            
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+            itoa(data[0], debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
             
             /*
              * The following check if VMC answers with ACK to the Setup data we send is not as in the MDB Spec defined.
@@ -245,28 +330,30 @@ void mdb_setup(void) {
              */
 
             if(data[0] != 0x000 && data[0] != 0x001) {
-				state = 0;
-				mdb_active_cmd = MDB_IDLE;
-				mdb_poll_reply = MDB_REPLY_ACK;
-				send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [SETUP]"));
+                state = 0;
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                send_str_p(UPLINK_USART,PSTR("Error: no ACK received on [SETUP]"));
                 return;    
-			}
+            }
             
             state = 0;
-			mdb_active_cmd = MDB_IDLE;
-			mdb_poll_reply = MDB_REPLY_ACK;
-			return;
-		break;
+            mdb_active_cmd = MDB_IDLE;
+            mdb_poll_reply = MDB_REPLY_ACK;
+            return;
 
-		// Unknown Subcommand from VMC
-		default:
+        break;
+
+        // Unknown Subcommand from VMC
+        default:
             send_str_p(UPLINK_USART,PSTR("Error: unknown subcommand [SETUP]\r\n"));
             state = 0;
             mdb_active_cmd = MDB_IDLE;
             mdb_poll_reply = MDB_REPLY_ACK;
             return;
         break;
-	}
+        
+    }
 }
 
 void mdb_poll(void) {
@@ -335,7 +422,7 @@ void mdb_poll(void) {
         break;
 
         case MDB_REPLY_DISPLAY_REQ:
-            // not yet implemented			
+            // not yet implemented                      
         break;
 
         case MDB_REPLY_BEGIN_SESSION:

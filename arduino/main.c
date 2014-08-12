@@ -27,7 +27,7 @@
 
 int main(void) {
 
-    setup_usart(0,38400,8,'N',1);
+    setup_usart(0,115200,8,'N',1);
     setup_usart(1,9600,9,'N',1);
     
     sei();
