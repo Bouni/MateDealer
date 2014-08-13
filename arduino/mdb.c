@@ -926,26 +926,24 @@ void mdb_reader(void) {
 
 void mdb_expansion(void) {  
 
-    static uint8_t data[32];
+    static uint8_t data[33];
 
     uint8_t checksum = MDB_EXPANSION;
 
-    if(buffer_level(MDB_USART,RX) < 64) return;     
+    if(buffer_level(MDB_USART,RX) < 66) return;     
     
     #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
     #endif
 
-    for(uint8_t i=0; i<31; i++) {
+    for(uint8_t i=0; i<=32; i++) {
         data[i] = (uint8_t) recv_mdb(MDB_USART);
-        if(i != 30) {
-            checksum += data[i];
-        }
+        checksum += data[i];
     }
         
     #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("Debug RX:"));
-    for(index = 0; index < 31; index++) {
+    for(index = 0; index <= 32; index++) {
         itoa(data[index], debug_buffer, 16);
         send_str(UPLINK_USART, debug_buffer);
         send_str_p(UPLINK_USART, PSTR(";"));
@@ -954,7 +952,7 @@ void mdb_expansion(void) {
     #endif
 
     // validate checksum
-    if(checksum != data[30]) {
+    if(checksum != data[32]) {
         mdb_active_cmd = MDB_IDLE;
         mdb_poll_reply = MDB_REPLY_ACK;
         checksum = MDB_EXPANSION;
@@ -965,7 +963,7 @@ void mdb_expansion(void) {
     // fool the VMC and reply its own config back ;-)
     checksum = 0x09;
 
-    for(uint8_t j=1; j<=30; j++) {
+    for(uint8_t j=1; j<=31; j++) {
         send_mdb(MDB_USART,data[j]);
         checksum += data[j];
     }
