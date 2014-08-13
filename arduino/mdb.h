@@ -25,7 +25,7 @@
 #define FALSE       0
 #endif
 
-#define DEBUG       0
+#define DEBUG       2
 
 #define MDB_USART   1
 

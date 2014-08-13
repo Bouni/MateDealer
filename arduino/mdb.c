@@ -932,7 +932,7 @@ void mdb_expansion(void) {
 
     if(buffer_level(MDB_USART,RX) < 66) return;     
     
-    #if DEBUG == 1
+    #if DEBUG == 2
     send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
     #endif
 
@@ -941,7 +941,7 @@ void mdb_expansion(void) {
         checksum += data[i];
     }
         
-    #if DEBUG == 1
+    #if DEBUG == 2
     send_str_p(UPLINK_USART, PSTR("Debug RX:"));
     for(index = 0; index <= 32; index++) {
         itoa(data[index], debug_buffer, 16);
