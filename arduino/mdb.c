@@ -112,7 +112,7 @@ void mdb_reset(void) {
     // Wait for enough data in buffer to proceed reset
     if(buffer_level(MDB_USART,RX) < 2) return; 
 
-    #if DEBUG == 1
+    #if DEBUG == 2
     send_str_p(UPLINK_USART, PSTR("RESET\r\n"));
     #endif
    
@@ -205,7 +205,7 @@ void mdb_setup(void) {
         // Stage 1 - config Data
         case 0:
             
-        #if DEBUG == 1
+        #if DEBUG == 2
         send_str_p(UPLINK_USART, PSTR("SETUP STAGE 1\r\n"));
         #endif
         
@@ -289,7 +289,7 @@ void mdb_setup(void) {
         // Stage 2 - price data
         case 1:
         
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("SETUP STAGE 2\r\n"));
             #endif
             
@@ -324,7 +324,7 @@ void mdb_setup(void) {
             // Wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return; 
             
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("SETUP WAIT FOR ACK\r\n"));
             #endif
             
@@ -380,7 +380,7 @@ void mdb_poll(void) {
         // Wait for enough data in buffer
         if(buffer_level(MDB_USART,RX) < 2) return; 
         
-        #if DEBUG == 1
+        #if DEBUG == 2
         send_str_p(UPLINK_USART, PSTR("POLL\r\n"));
         #endif
         
@@ -651,7 +651,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 10) return;     
 
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("VEND REQUEST\r\n"));
             #endif
             
@@ -691,7 +691,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("VEND Cancel\r\n"));
             #endif
             
@@ -728,7 +728,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 6) return;     
 
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("VEND SUCCESS\r\n"));
             #endif
             
@@ -768,7 +768,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("VEND FAILURE\r\n"));
             #endif
             
@@ -805,7 +805,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("VEND SESSION COMPLETE\r\n"));
             #endif
             
@@ -863,7 +863,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("READER DISABLE\r\n"));
             #endif
             
@@ -883,7 +883,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("READER ENABLE\r\n"));
             #endif
             
@@ -903,7 +903,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 1
+            #if DEBUG == 2
             send_str_p(UPLINK_USART, PSTR("READER CANCEL\r\n"));
             #endif
             
