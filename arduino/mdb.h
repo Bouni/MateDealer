@@ -37,7 +37,7 @@ enum MDB_STATES {MDB_INACTIVE,MDB_DISABLED,MDB_ENABLED,MDB_SESSION_IDLE,MDB_VEND
 //---------------------------------------------------------------------------
 //  MDB CMDS
 //---------------------------------------------------------------------------
-enum MDB_CMD {MDB_IDLE,MDB_RESET = 0x10,MDB_SETUP,MDB_POLL,MDB_VEND,MDB_READER};
+enum MDB_CMD {MDB_IDLE,MDB_RESET = 0x10,MDB_SETUP,MDB_POLL,MDB_VEND,MDB_READER,MDB_EXPANSION};
 
 //---------------------------------------------------------------------------
 //  POLL REPLYS
@@ -95,5 +95,6 @@ void mdb_setup(void);
 void mdb_poll(void);
 void mdb_vend(void);
 void mdb_reader(void);
+void mdb_expansion(void);
 
 #endif // MDB_H

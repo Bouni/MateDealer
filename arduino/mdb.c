@@ -62,7 +62,7 @@ void mdb_cmd_handler(void) {
             // read data from buffer
             uint16_t data = recv_mdb(MDB_USART);
             // if modebit is set and command is in command range for cashless device
-            if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_READER) {
+            if((data & 0x100) == 0x100 && MDB_RESET <= (data ^ 0x100) && (data ^ 0x100) <= MDB_EXPANSION) {
                 //Set command as active command
                 mdb_active_cmd = (data ^ 0x100);
                 if(!reset_done && mdb_active_cmd != MDB_RESET) {
@@ -95,6 +95,14 @@ void mdb_cmd_handler(void) {
         
         case MDB_READER:
             mdb_reader();
+        break;
+
+        case MDB_REVALUE:
+            // Not yet implemented
+        break;
+        
+        case MDB_EXPANSION:
+            mdb_expansion();
         break;
     }
 }
@@ -916,4 +924,55 @@ void mdb_reader(void) {
     }
 }
 
+void mdb_expansion(void) {  
+
+    static uint8_t data[32];
+
+    uint8_t checksum = MDB_EXPANSION;
+
+    if(buffer_level(MDB_USART,RX) < 64) return;     
+    
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
+    #endif
+
+    for(uint8_t i=0; i<31; i++) {
+        data[i] = (uint8_t) recv_mdb(MDB_USART);
+        if(i != 30) {
+            checksum += data[i];
+        }
+    }
+        
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+    for(index = 0; index < 31; index++) {
+        itoa(data[index], debug_buffer, 16);
+        send_str(UPLINK_USART, debug_buffer);
+        send_str_p(UPLINK_USART, PSTR(";"));
+    }
+    send_str_p(UPLINK_USART, PSTR("\r\n"));
+    #endif
+
+    // validate checksum
+    if(checksum != data[30]) {
+        mdb_active_cmd = MDB_IDLE;
+        mdb_poll_reply = MDB_REPLY_ACK;
+        checksum = MDB_EXPANSION;
+        send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [EXPANSION]\r\n"));
+        return;  
+    }
+    
+    // fool the VMC and reply its own config back ;-)
+    checksum = 0x09;
+
+    for(uint8_t j=1; j<=30; j++) {
+        send_mdb(MDB_USART,data[j]);
+        checksum += data[j];
+    }
+
+    send_mdb(MDB_USART,checksum);
+    
+    mdb_active_cmd = MDB_IDLE;
+    mdb_poll_reply = MDB_REPLY_ACK;
+}
 
