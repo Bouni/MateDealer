@@ -69,6 +69,12 @@ void mdb_cmd_handler(void) {
                     mdb_active_cmd = MDB_IDLE;
                 }
             }
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+            itoa(data, debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
         break;
         
         case MDB_RESET:
@@ -108,6 +114,7 @@ void mdb_reset(void) {
     send_str_p(UPLINK_USART, PSTR("Debug RX:"));
     itoa(checksum, debug_buffer, 16);
     send_str(UPLINK_USART, debug_buffer);
+    send_str_p(UPLINK_USART, PSTR("\r\n"));
     #endif
     
     // validate checksum
