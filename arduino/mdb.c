@@ -70,7 +70,7 @@ void mdb_cmd_handler(void) {
                 }
             }
             #if DEBUG == 1
-            send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+            send_str_p(UPLINK_USART, PSTR("RX:"));
             itoa(data, debug_buffer, 16);
             send_str(UPLINK_USART, debug_buffer);
             send_str_p(UPLINK_USART, PSTR("\r\n"));
@@ -112,14 +112,14 @@ void mdb_reset(void) {
     // Wait for enough data in buffer to proceed reset
     if(buffer_level(MDB_USART,RX) < 2) return; 
 
-    #if DEBUG == 2
+    #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("RESET\r\n"));
     #endif
    
     uint16_t checksum = recv_mdb(MDB_USART);
 
     #if DEBUG == 1
-    send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+    send_str_p(UPLINK_USART, PSTR("RX:"));
     itoa(checksum, debug_buffer, 16);
     send_str(UPLINK_USART, debug_buffer);
     send_str_p(UPLINK_USART, PSTR("\r\n"));
@@ -145,7 +145,7 @@ void mdb_reset(void) {
     send_mdb(MDB_USART, 0x100);
     
     #if DEBUG == 1
-    send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+    send_str_p(UPLINK_USART, PSTR("TX:"));
     itoa(0x100, debug_buffer, 16);
     send_str(UPLINK_USART, debug_buffer);
     send_str_p(UPLINK_USART, PSTR("\r\n"));
@@ -174,7 +174,7 @@ void mdb_setup(void) {
         }
         
         #if DEBUG == 1
-        send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+        send_str_p(UPLINK_USART, PSTR("RX:"));
         for(index = 0; index < 6; index++) {
             itoa(data[index], debug_buffer, 16);
             send_str(UPLINK_USART, debug_buffer);
@@ -205,7 +205,7 @@ void mdb_setup(void) {
         // Stage 1 - config Data
         case 0:
             
-        #if DEBUG == 2
+        #if DEBUG == 1
         send_str_p(UPLINK_USART, PSTR("SETUP STAGE 1\r\n"));
         #endif
         
@@ -237,7 +237,7 @@ void mdb_setup(void) {
         send_mdb(MDB_USART, checksum);
         
         #if DEBUG == 1
-        send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+        send_str_p(UPLINK_USART, PSTR("TX:"));
 
         itoa(cd.reader_cfg, debug_buffer, 16);
         send_str(UPLINK_USART, debug_buffer);
@@ -289,7 +289,7 @@ void mdb_setup(void) {
         // Stage 2 - price data
         case 1:
         
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("SETUP STAGE 2\r\n"));
             #endif
             
@@ -301,7 +301,7 @@ void mdb_setup(void) {
             send_mdb(MDB_USART, 0x100);
 
             #if DEBUG == 1
-            send_str_p(UPLINK_USART, PSTR("Debug TX:"));
+            send_str_p(UPLINK_USART, PSTR("TX:"));
             itoa(0x100, debug_buffer, 16);
             send_str(UPLINK_USART, debug_buffer);
             send_str_p(UPLINK_USART, PSTR("\r\n"));
@@ -324,7 +324,7 @@ void mdb_setup(void) {
             // Wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return; 
             
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("SETUP WAIT FOR ACK\r\n"));
             #endif
             
@@ -332,7 +332,7 @@ void mdb_setup(void) {
             data[0] = recv_mdb(MDB_USART);
             
             #if DEBUG == 1
-            send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+            send_str_p(UPLINK_USART, PSTR("RX:"));
             itoa(data[0], debug_buffer, 16);
             send_str(UPLINK_USART, debug_buffer);
             send_str_p(UPLINK_USART, PSTR("\r\n"));
@@ -380,7 +380,7 @@ void mdb_poll(void) {
         // Wait for enough data in buffer
         if(buffer_level(MDB_USART,RX) < 2) return; 
         
-        #if DEBUG == 2
+        #if DEBUG == 1
         send_str_p(UPLINK_USART, PSTR("POLL\r\n"));
         #endif
         
@@ -651,7 +651,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 10) return;     
 
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("VEND REQUEST\r\n"));
             #endif
             
@@ -691,7 +691,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("VEND Cancel\r\n"));
             #endif
             
@@ -728,7 +728,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 6) return;     
 
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("VEND SUCCESS\r\n"));
             #endif
             
@@ -768,7 +768,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("VEND FAILURE\r\n"));
             #endif
             
@@ -805,7 +805,7 @@ void mdb_vend(void) {
             // wait for enough data in buffer
             if(buffer_level(MDB_USART,RX) < 2) return;     
 
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("VEND SESSION COMPLETE\r\n"));
             #endif
             
@@ -863,7 +863,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("READER DISABLE\r\n"));
             #endif
             
@@ -883,7 +883,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("READER ENABLE\r\n"));
             #endif
             
@@ -903,7 +903,7 @@ void mdb_reader(void) {
                 return;
             }
             
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("READER CANCEL\r\n"));
             #endif
             
@@ -937,6 +937,13 @@ void mdb_expansion(void) {
 
             data[0] = (uint8_t) recv_mdb(MDB_USART);
             checksum += data[0];
+    
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("RX:"));
+            itoa(data[0], debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
             
             state++;
 
@@ -948,6 +955,13 @@ void mdb_expansion(void) {
             for(uint8_t i=1; i <=3; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
                 checksum =+ data[i];
+                
+                #if DEBUG == 1
+                send_str_p(UPLINK_USART, PSTR("RX:"));
+                itoa(data[i], debug_buffer, 16);
+                send_str(UPLINK_USART, debug_buffer);
+                send_str_p(UPLINK_USART, PSTR("\r\n"));
+                #endif
             }
             
             state++;
@@ -960,6 +974,13 @@ void mdb_expansion(void) {
             for(uint8_t i=4; i <=15; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
                 checksum =+ data[i];
+                
+                #if DEBUG == 1
+                send_str_p(UPLINK_USART, PSTR("RX:"));
+                itoa(data[i], debug_buffer, 16);
+                send_str(UPLINK_USART, debug_buffer);
+                send_str_p(UPLINK_USART, PSTR("\r\n"));
+                #endif
             }
             
             state++;
@@ -972,6 +993,13 @@ void mdb_expansion(void) {
             for(uint8_t i=16; i <=27; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
                 checksum =+ data[i];
+
+                #if DEBUG == 1
+                send_str_p(UPLINK_USART, PSTR("RX:"));
+                itoa(data[i], debug_buffer, 16);
+                send_str(UPLINK_USART, debug_buffer);
+                send_str_p(UPLINK_USART, PSTR("\r\n"));
+                #endif
             }
 
             state++;
@@ -984,6 +1012,13 @@ void mdb_expansion(void) {
             for(uint8_t i=28; i <=29; i++) {
                 data[i] = (uint8_t) recv_mdb(MDB_USART);
                 checksum =+ data[i];
+
+                #if DEBUG == 1
+                send_str_p(UPLINK_USART, PSTR("RX:"));
+                itoa(data[i], debug_buffer, 16);
+                send_str(UPLINK_USART, debug_buffer);
+                send_str_p(UPLINK_USART, PSTR("\r\n"));
+                #endif
             }
 
             state++;
@@ -994,6 +1029,13 @@ void mdb_expansion(void) {
             if(buffer_level(MDB_USART,RX) < 2) return;   
             
             data[30] = (uint8_t) recv_mdb(MDB_USART);
+
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("RX:"));
+            itoa(data[30], debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
             
             // validate checksum
             if(checksum != data[30]) {
@@ -1018,9 +1060,23 @@ void mdb_expansion(void) {
             for(uint8_t i=0; i <=29; i++) {
                 send_mdb(MDB_USART,data[i]);
                 checksum += data[i];        
+            
+                #if DEBUG == 1
+                send_str_p(UPLINK_USART, PSTR("TX:"));
+                itoa(data[i], debug_buffer, 16);
+                send_str(UPLINK_USART, debug_buffer);
+                send_str_p(UPLINK_USART, PSTR("\r\n"));
+                #endif
             }
 
             send_mdb(MDB_USART,checksum);
+            
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("TX:"));
+            itoa(checksum, debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
 
             state++;
 
@@ -1030,11 +1086,18 @@ void mdb_expansion(void) {
             
             if(buffer_level(MDB_USART,RX) < 2) return; 
             
-            #if DEBUG == 2
+            #if DEBUG == 1
             send_str_p(UPLINK_USART, PSTR("EXPANSION WAIT FOR ACK\r\n"));
             #endif
             
             data[0] = recv_mdb(MDB_USART);
+                
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("RX:"));
+            itoa(data[0], debug_buffer, 16);
+            send_str(UPLINK_USART, debug_buffer);
+            send_str_p(UPLINK_USART, PSTR("\r\n"));
+            #endif
             
             if(data[0] != 0x100) {
                 mdb_active_cmd = MDB_IDLE;
@@ -1057,7 +1120,7 @@ void mdb_expansion(void) {
     /*
     if(buffer_level(MDB_USART,RX) < 68) return;     
     
-    #if DEBUG == 2
+    #if DEBUG == 1
     send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
     #endif
 
@@ -1066,8 +1129,8 @@ void mdb_expansion(void) {
         checksum += data[i];
     }
         
-    #if DEBUG == 2
-    send_str_p(UPLINK_USART, PSTR("Debug RX:"));
+    #if DEBUG == 1
+    send_str_p(UPLINK_USART, PSTR("RX:"));
     for(index = 0; index <= 33; index++) {
         itoa(data[index], debug_buffer, 16);
         send_str(UPLINK_USART, debug_buffer);
