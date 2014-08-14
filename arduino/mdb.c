@@ -926,10 +926,135 @@ void mdb_reader(void) {
 
 void mdb_expansion(void) {  
 
+    static uint8_t state = 0;
     static uint8_t data[34];
 
-    uint8_t checksum = MDB_EXPANSION;
+    static uint8_t checksum = MDB_EXPANSION;
 
+    switch(state) {
+        case 0: // Request ID
+            if(buffer_level(MDB_USART,RX) < 2) return;
+
+            data[0] = (uint8_t) recv_mdb(MDB_USART);
+            checksum += data[0];
+            
+            state++;
+
+        break;
+
+        case 1: // Manufacturer code
+            if(buffer_level(MDB_USART,RX) < 6) return;
+
+            for(uint8_t i=1; i <=3; i++) {
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
+                checksum =+ data[i];
+            }
+            
+            state++;
+
+        break;
+
+        case 2: // Serial Number
+            if(buffer_level(MDB_USART,RX) < 24) return;
+
+            for(uint8_t i=4; i <=15; i++) {
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
+                checksum =+ data[i];
+            }
+            
+            state++;
+
+        break;
+
+        case 3: // Model Number
+            if(buffer_level(MDB_USART,RX) < 24) return;
+
+            for(uint8_t i=16; i <=27; i++) {
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
+                checksum =+ data[i];
+            }
+
+            state++;
+
+        break;
+        
+        case 4: // Software Version
+            if(buffer_level(MDB_USART,RX) < 4) return;
+
+            for(uint8_t i=28; i <=29; i++) {
+                data[i] = (uint8_t) recv_mdb(MDB_USART);
+                checksum =+ data[i];
+            }
+
+            state++;
+
+        break;
+        
+        case 5: // Checksum
+            if(buffer_level(MDB_USART,RX) < 2) return;   
+            
+            data[30] = (uint8_t) recv_mdb(MDB_USART);
+            
+            // validate checksum
+            if(checksum != data[30]) {
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                checksum = MDB_EXPANSION;
+                state = 0;
+                send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [EXPANSION]\r\n"));
+                return;  
+            }
+
+            state++;
+
+        break;
+
+        case 6: // Answer with the same data to fool the VMC
+        
+            checksum = 0;
+
+            data[0] = 0x09; // Peripherial ID response
+
+            for(uint8_t i=0; i <=29; i++) {
+                send_mdb(MDB_USART,data[i]);
+                checksum += data[i];        
+            }
+
+            send_mdb(MDB_USART,checksum);
+
+            state++;
+
+        break;     
+
+        case 7: // Wait for ACK
+            
+            if(buffer_level(MDB_USART,RX) < 2) return; 
+            
+            #if DEBUG == 2
+            send_str_p(UPLINK_USART, PSTR("EXPANSION WAIT FOR ACK\r\n"));
+            #endif
+            
+            data[0] = recv_mdb(MDB_USART);
+            
+            if(data[0] != 0x100) {
+                mdb_active_cmd = MDB_IDLE;
+                mdb_poll_reply = MDB_REPLY_ACK;
+                checksum = MDB_EXPANSION;
+                state = 0;
+                send_str_p(UPLINK_USART,PSTR("Error: VMC sent no ACK [EXPANSION]\r\n"));
+                return;  
+            }
+
+            mdb_active_cmd = MDB_IDLE;
+            mdb_poll_reply = MDB_REPLY_ACK;
+            checksum = MDB_EXPANSION;
+            state = 0;
+            send_str_p(UPLINK_USART,PSTR("[EXPANSION] suceed!\r\n"));
+            
+        break;
+    }
+
+    /*
     if(buffer_level(MDB_USART,RX) < 68) return;     
     
     #if DEBUG == 2
@@ -977,5 +1102,6 @@ void mdb_expansion(void) {
     
     mdb_active_cmd = MDB_IDLE;
     mdb_poll_reply = MDB_REPLY_ACK;
+    */
 }
 
