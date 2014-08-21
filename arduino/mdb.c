@@ -934,6 +934,10 @@ void mdb_expansion(void) {
     switch(state) {
         case 0: // Request ID
             if(buffer_level(MDB_USART,RX) < 2) return;
+            
+            #if DEBUG == 1
+            send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
+            #endif
 
             data[0] = (uint8_t) recv_mdb(MDB_USART);
             checksum += data[0];
@@ -1117,54 +1121,5 @@ void mdb_expansion(void) {
         break;
     }
 
-    /*
-    if(buffer_level(MDB_USART,RX) < 68) return;     
-    
-    #if DEBUG == 1
-    send_str_p(UPLINK_USART, PSTR("EXPANSION\r\n"));
-    #endif
-
-    for(uint8_t i=0; i<=33; i++) {
-        data[i] = (uint8_t) recv_mdb(MDB_USART);
-        checksum += data[i];
-    }
-        
-    #if DEBUG == 1
-    send_str_p(UPLINK_USART, PSTR("RX:"));
-    for(index = 0; index <= 33; index++) {
-        itoa(data[index], debug_buffer, 16);
-        send_str(UPLINK_USART, debug_buffer);
-        send_str_p(UPLINK_USART, PSTR(";"));
-    }
-    send_str_p(UPLINK_USART, PSTR("\r\n"));
-
-    send_str_p(UPLINK_USART, PSTR("EXPANSION checksum:"));
-    itoa(checksum, debug_buffer, 16);
-    send_str(UPLINK_USART, debug_buffer);
-    send_str_p(UPLINK_USART, PSTR("\r\n"));
-    #endif
-
-    // validate checksum
-    if(checksum != data[34]) {
-        mdb_active_cmd = MDB_IDLE;
-        mdb_poll_reply = MDB_REPLY_ACK;
-        checksum = MDB_EXPANSION;
-        send_str_p(UPLINK_USART,PSTR("Error: invalid checksum [EXPANSION]\r\n"));
-        return;  
-    }
-    
-    // fool the VMC and reply its own config back ;-)
-    checksum = 0x09;
-
-    for(uint8_t j=1; j<=33; j++) {
-        send_mdb(MDB_USART,data[j]);
-        checksum += data[j];
-    }
-
-    send_mdb(MDB_USART,checksum);
-    
-    mdb_active_cmd = MDB_IDLE;
-    mdb_poll_reply = MDB_REPLY_ACK;
-    */
 }
 
