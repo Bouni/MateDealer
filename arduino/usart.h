@@ -6,8 +6,8 @@
  * @author bouni
  * @email bouni@owee.de  
  *   
- * @see The GNU Public License (GPL)
  */
+
 #ifndef USART_H
 #define USART_H
 
