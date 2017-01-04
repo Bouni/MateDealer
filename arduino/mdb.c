@@ -7,7 +7,6 @@
  * @author bouni
  * @email bouni@owee.de  
  *   
- * @see The GNU Public License (GPL)
  */
  
 #ifndef F_CPU
