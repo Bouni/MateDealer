@@ -1,5 +1,8 @@
 # MateDealer :: a Reaktor23 Hackerspace Project
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I3I364QTM)
+[![Github Sponsors](https://img.shields.io/badge/-Sponsor-fafbfc?style=for-the-badge&logo=GitHub%20Sponsors)](https://github.com/sponsors/Bouni)
+
 ## arduino 
 MateDealer is an open source implementation of a MDB cashless device.
 It runs on a Arduino Mega2560 and probably on other Arduinos/ATMEL micro processors.
